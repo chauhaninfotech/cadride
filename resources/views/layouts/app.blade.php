@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        <title>{{ config('app.name', 'Laravel') }}</title>
+        <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="assets/vendors/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="assets/vendors/ti-icons/css/themify-icons.css">
+    <link rel="stylesheet" href="assets/vendors/css/vendor.bundle.base.css">
+    <link rel="stylesheet" href="assets/vendors/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/vendors/font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/font-awesome.min.css">
+<style>
+.content-wrapper {
+    background: #FDF9F0;
+}
+.sidebar {
+    background: antiquewhite;
+}
+.navbar, .navbar .navbar-brand-wrapper {
+    background: #FFE9EB;
+}
+li.nav-item {
+    border-bottom: 1px solid #ffffff !important;
+}
+.sidebar .nav .nav-item.active, .sidebar .nav .nav-item:hover {
+    background: #FDF9F0;
+    color: #000;
+}
+.sidebar .nav.sub-menu .nav-item .nav-link.active {
+    color: #000 !important;
+}
+
+span.menu-title, sidebar .nav .nav-item .nav-link i.menu-arrow:before {
+    color: #000000 !important;
+}
+
+.sidebar .nav .nav-item .nav-link i.menu-icon {
+    margin-left: 0px;
+    margin-right: 10px;
+}
+.navbar .navbar-menu-wrapper .navbar-nav .nav-item .nav-link i {
+    font-size: 14px;
+    margin-top: 4px;
+}
+.sidebar .nav .nav-item.active > .nav-link i, .sidebar .nav .nav-item .nav-link i {
+    color: #F69EAF;
+    margin-right: 15px;
+}
+.animate-text span {
+    opacity: 0;
+    display: inline-block;
+    animation: fadeUp 0.6s forwards;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.cst_sec{
+        line-height: 55px;
+    border: 1px solid #ccc;
+    padding: 50px 25px;
+    width: 100%;
+    border-radius: 10px;
+}
+ul.pagination {
+    margin-top: 20px;
+    float: right;
+}
+.active span.page-link {
+    background: #1bcfb4;
+    border: 1px solid #1bcfb4;
+}
+.sidebar .nav.sub-menu .nav-item .nav-link.active {
+    color: #06b99d;
+}
+.img_wrap {
+    padding: 20px;
+}
+.img_wrap img {
+    width: 100%;
+}
+.addfund th, .addfund td{
+    background: aliceblue;
+}
+img{
+    width: 100%;
+}
+.certificate {
+    height: 600px;
+    background: url('http://127.0.0.1:8000/assets/images/w23.png');
+    background-size: cover;
+    background-position: center;
+
+    display: flex;
+    justify-content: center;   /* horizontal center */
+    align-items: center;       /* vertical center */
+    text-align: center;
+}
+
+.certificate-content h1 {
+    font-size: 30px;
+    font-weight: 600;
+}
+
+.certificate-content h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.certificate-content h3 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.certificate-content p {
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+.certificate-content .date {
+    font-size: 16px;
+}
+.certificate-content {
+    width: 800px;
+    margin-top: 100px;
+}
+@media print {
+    @page {
+        size: A4;
+        margin: 0;
+    }
+
+    #certificate-print {
+        width: 210mm;
+        height: 297mm;
+    }
+}
+
+
+@media print {
+    body {
+        margin: 0;
+        background: #fff;
+    }
+
+    .navbar,
+    .sidebar,
+    .page-header,
+    footer {
+        display: none !important;
+    }
+
+    #certificate-print {
+        display: block !important;
+        width: 210mm;
+        height: 297mm;
+        margin: auto;
+    }
+    #certificate-print {
+        background: url('http://127.0.0.1:8000/assets/images/w23.png') center/cover no-repeat !important;
+
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+   
+    #certificate-print {
+        display: block;
+        border: 2px solid red;
+        height: 300px;
+    }
+    .printBtn {
+        display: none;
+
+    }
+
+}
+</style>
+       
+    </head>
+    <body class="font-sans antialiased">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+            @include('layouts.navigation')
+
+            
+<div class="container-fluid page-body-wrapper">
+    
+                @include('layouts.sidebar')
+            <!-- Page Content -->
+            
+                <div class="main-panel">
+                    <div class="content-wrapper">
+                        <main>
+                            <!-- Page Heading -->
+            @isset($header)
+                <header class="bg-white dark:bg-gray-800 shadow" style="margin-bottom: 20px;">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+                
+
+            @endisset
+                {{ $slot }}
+                </main>
+</div>
+</div>
+            
+            <div>
+        </div>
+    <script src="assets/vendors/js/vendor.bundle.base.js"></script>
+   <!-- Place the first <script> tag in your HTML's <head> -->
+
+
+    <script src="assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="assets/js/off-canvas.js"></script>
+    <script src="assets/js/misc.js"></script>
+    <script src="assets/js/settings.js"></script>
+    <script src="assets/js/todolist.js"></script>
+    <script src="assets/js/jquery.cookie.js"></script>
+    <script src="assets/js/dashboard.js"></script>
+    
+
+
+
+    </body>
+</html>
