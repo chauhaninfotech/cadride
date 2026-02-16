@@ -19,14 +19,6 @@ class PassengerController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('passengers.create');
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -37,7 +29,7 @@ class PassengerController extends Controller
             'email' => 'required|email|unique:passengers,email',
             'country_code' => 'nullable|string|max:10',
             'contact' => 'nullable|string|max:20',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:8',
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:255',
             'subpoint' => 'nullable|string|max:255',
@@ -79,15 +71,6 @@ class PassengerController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $passenger = Passenger::findOrFail($id);
-        return view('passengers.edit', compact('passenger'));
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
@@ -100,7 +83,7 @@ class PassengerController extends Controller
             'email' => 'required|email|unique:passengers,email,' . $id,
             'country_code' => 'nullable|string|max:10',
             'contact' => 'nullable|string|max:20',
-            'password' => 'nullable|string|min:6',
+            'password' => 'nullable|string|min:8',
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:255',
             'subpoint' => 'nullable|string|max:255',
