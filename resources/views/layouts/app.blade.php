@@ -38,7 +38,10 @@ li.nav-item {
 .sidebar .nav.sub-menu .nav-item .nav-link.active {
     color: #000 !important;
 }
-
+button.btn.btn-primary, button.btn.btn-primary:hover {
+    background: #DC1921;
+    border: 1px solid #DC1921;
+}
 span.menu-title, sidebar .nav .nav-item .nav-link i.menu-arrow:before {
     color: #000000 !important;
 }

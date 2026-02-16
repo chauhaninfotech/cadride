@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/query', [AdminCoontroller::class, 'query'])->name('query');
+    Route::post('/query', [AdminCoontroller::class, 'checkQuery'])->name('query.check');
     Route::get('/passenger-list', [AdminCoontroller::class, 'passengerList'])->name('passenger-list');
     
 });

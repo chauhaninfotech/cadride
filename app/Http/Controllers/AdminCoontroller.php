@@ -15,6 +15,11 @@ class AdminCoontroller extends Controller
    public function passengerList(){
     return view('user.passenger-list');
    }
+   public function checkQuery(Request $request){
+    $query = $request->input('query');
+    
+    return back()->with('success', 'Your query has been submitted successfully!');
+   }
 }
 
 
