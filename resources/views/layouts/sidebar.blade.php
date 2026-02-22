@@ -40,6 +40,25 @@
               </div>
             </li>
             <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#rider" aria-expanded="false" aria-controls="rider">
+                <i class="fa fa-user"></i>
+                <span class="menu-title">Riders</span>
+                <i class="menu-arrow"></i>
+                
+              </a>
+              <div class="collapse" id="rider">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('rider-list') }}">List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('rider-add') }}">Add</a>
+                  </li>
+                  
+                </ul>
+              </div>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#pickup" aria-expanded="false" aria-controls="pickup">
                 <i class="fa fa-map-marker"></i>
                 <span class="menu-title">Pickup</span>
