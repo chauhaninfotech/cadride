@@ -20,19 +20,24 @@
     <link rel="stylesheet" type="text/css" href="assets/css/font-awesome.min.css">
 <style>
 .content-wrapper {
-    background: #FDF9F0;
+    background: #FFFAFB;
 }
+
+
 .sidebar {
-    background: antiquewhite;
+    background: #FFE9F0;
+}
+.navbar .navbar-brand-wrapper .navbar-brand img {
+    height: 70px;
 }
 .navbar, .navbar .navbar-brand-wrapper {
-    background: #FFE9EB;
+    background: #FFF5F8;
 }
 li.nav-item {
     border-bottom: 1px solid #ffffff !important;
 }
 .sidebar .nav .nav-item.active, .sidebar .nav .nav-item:hover {
-    background: #FDF9F0;
+    background: #FFFAFB;
     color: #000;
 }
 .sidebar .nav.sub-menu .nav-item .nav-link.active {
@@ -45,7 +50,9 @@ button.btn.btn-primary, button.btn.btn-primary:hover {
 span.menu-title, sidebar .nav .nav-item .nav-link i.menu-arrow:before {
     color: #000000 !important;
 }
-
+.cst_sec{
+    line-height: 25px !important;
+}
 .sidebar .nav .nav-item .nav-link i.menu-icon {
     margin-left: 0px;
     margin-right: 10px;

@@ -1,10 +1,10 @@
 <!-- partial:partials/_navbar.html -->
       <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
+        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start" >
           
           <a class="navbar-brand brand-logo" href="{{ route('dashboard') }}">
-                  <!-- <img src="{{ Storage::url('images/cad.jpeg') }}" alt="Cadride Logo"> -->
-                   <h2>CADRIDE</h2>
+                  <img src="{{ Storage::url('passengers/b3hFsArVMLTpOVdj2iWzoTq9Y68GGrmWz1D5l0tp.png') }}" alt="Cadride Logo">
+                   
                         
                     </a>
         </div>

@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Passenger;
+use App\Helpers\Helpers;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Console\Helper\Helper;
 
 class PassengerController extends Controller
 {
@@ -14,57 +18,111 @@ class PassengerController extends Controller
      */
     public function index()
     {
-        $passengers = Passenger::latest()->paginate(10);
-        return response()->json($passengers);
+        $query = Passenger::query();
+        if (request('id')) {
+            $query->where('id', request('id'));
+        }
+        if (request('name')) {
+            $query->where('fullname', 'like', '%' . request('name') . '%');
+        }
+        if (request('contact')) {
+            $query->where('contact', 'like', '%' . request('contact') . '%');
+        }
+        
+            $query->where('status', 1);
+        
+        $passengers = $query->latest()->paginate(Config::get('pagination.per_page'));
+        return view('user.passenger-list', compact('passengers'));
     }
 
+    public function passengerAdd()
+    {
+        return view('user.passenger-add');
+    }
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'distributor' => 'nullable|string|max:255',
-            'fullname' => 'required|string|max:255',
-            'email' => 'required|email|unique:passengers,email',
-            'country_code' => 'nullable|string|max:10',
-            'contact' => 'nullable|string|max:20',
-            'password' => 'required|string|min:8',
-            'address' => 'nullable|string',
-            'city' => 'nullable|string|max:255',
-            'subpoint' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:20',
-            'passenger_type' => 'nullable|string|max:255',
-            'tag' => 'nullable|string|max:255',
-            'user_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'role' => 'nullable|string|max:255',
-            'otp_key' => 'nullable|string|max:255',
-            'verify' => 'nullable|boolean',
-            'status' => 'nullable|boolean',
-            'fcm_token' => 'nullable|string|max:255',
-            'is_first_booking' => 'nullable|boolean',
-        ]);
+        if ($request->input('city') && $request->input('postal_code')) {
+            $subpoint = Helpers::getSubpointName($request->input('postal_code'));
+            if (!$subpoint) {
+                return redirect()->back()->with('error', 'Subpoint Not Found. Please check the city and postal code.');
+            }
+        } 
+        
+        $table = new Passenger();
+        $table->fullname = $request->input('fullname');
+        $table->email = $request->input('email');
+        $table->country_code = $request->input('country_code');
+        $table->contact = $request->input('contact');
+        $table->password = Hash::make($request->input('password'));
+        $table->address = $request->input('address');   
+        $table->city = $request->input('city');
+        $table->subpoint = $subpoint;
+        $table->postal_code = $request->input('postal_code');
+        $table->latitude = $request->input('latitude');
+        $table->longitude = $request->input('longitude');
 
-        // Hash the password
-        $validated['password'] = Hash::make($validated['password']);
-
-        // Handle file upload
+        $table->verify = 0;
+        $table->status = 1;
+        $table->is_first_booking =  0;
         if ($request->hasFile('user_image')) {
-            $validated['user_image'] = $request->file('user_image')->store('passengers', 'public');
+            $table->user_image = $request->file('user_image')->store('passengers', 'public');
         }
+        $table->save();
 
-        $passenger = Passenger::create($validated);
-
-        return response()->json([
-            'message' => 'Passenger created successfully',
-            'data' => $passenger
-        ], 201);
+        if($table->id){
+            DB::table('passenger_addresses')->insert([
+                'passenger_id' => $table->id,
+                'typeset' => 'primary',
+                'address' => $request->input('address'),
+                'city' => $request->input('city'),
+                'postal_code' => $request->input('postal_code'),
+                'subpoint' => $subpoint,
+                'latitude' => $request->input('latitude'),
+                'longitude' => $request->input('longitude'),
+                'status' => 1,
+            ]);
+        }
+        return redirect()->route('passenger-add')->with('success', 'Passenger added successfully');
     }
 
+    public function toggleVerify(Request $request)
+    {
+        $passenger = Passenger::findOrFail($request->id);
+        $passenger->verify = !$passenger->verify;
+        $passenger->save();
+        
+
+        return response()->json(['success' => true, 'message' => 'Passenger verification status updated successfully']);
+    }
+
+    public function toggleStatus(Request $request)
+    {
+        $passenger = Passenger::findOrFail($request->id);
+        $passenger->status = !$passenger->status;
+        $passenger->save();
+
+        return response()->json(['success' => true, 'message' => 'Passenger status updated successfully']);
+    }
+
+    public function edit(Request $request)
+    {   $id = $request->query('id');
+        $passenger = Passenger::findOrFail($id);
+        return view('user.passenger-edit', compact('passenger'));
+    }
+
+    public function bookings(Request $request, string $id)
+    {
+        $passenger = Passenger::findOrFail($id);
+        $bookings = $passenger->bookings()->latest()->get();
+        return view('user.passenger-bookings', compact('passenger', 'bookings'));
+    }
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $passenger = Passenger::findOrFail($id);
         return response()->json($passenger);
@@ -73,60 +131,55 @@ class PassengerController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request)
     {
+        if ($request->input('city') && $request->input('postal_code')) {
+            $subpoint = Helpers::getSubpointName($request->input('postal_code'));
+            if (!$subpoint) {
+                return redirect()->back()->with('error', 'Subpoint Not Found. Please check the city and postal code.');
+            }
+        } 
+        $id = $request->input('id');
         $passenger = Passenger::findOrFail($id);
+        $passenger->fullname = $request->input('fullname');
+        $passenger->email = $request->input('email');
+        $passenger->country_code = $request->input('country_code');
+        $passenger->contact = $request->input('contact');
+        $passenger->address = $request->input('address');
+        $passenger->city = $request->input('city');
+        $passenger->postal_code = $request->input('postal_code');
+        $passenger->subpoint = $subpoint;
+        $passenger->latitude = $request->input('latitude');
+        $passenger->longitude = $request->input('longitude');
+    
+        $passenger->status = $request->input('status');
 
-        $validated = $request->validate([
-            'distributor' => 'nullable|string|max:255',
-            'fullname' => 'required|string|max:255',
-            'email' => 'required|email|unique:passengers,email,' . $id,
-            'country_code' => 'nullable|string|max:10',
-            'contact' => 'nullable|string|max:20',
-            'password' => 'nullable|string|min:8',
-            'address' => 'nullable|string',
-            'city' => 'nullable|string|max:255',
-            'subpoint' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:20',
-            'passenger_type' => 'nullable|string|max:255',
-            'tag' => 'nullable|string|max:255',
-            'user_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'role' => 'nullable|string|max:255',
-            'otp_key' => 'nullable|string|max:255',
-            'verify' => 'nullable|boolean',
-            'status' => 'nullable|boolean',
-            'fcm_token' => 'nullable|string|max:255',
-            'is_first_booking' => 'nullable|boolean',
-        ]);
-
-        // Hash the password if provided
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
-
-        // Handle file upload
         if ($request->hasFile('user_image')) {
             // Delete old image if exists
             if ($passenger->user_image) {
                 Storage::disk('public')->delete($passenger->user_image);
             }
-            $validated['user_image'] = $request->file('user_image')->store('passengers', 'public');
+            $passenger->user_image = $request->file('user_image')->store('passengers', 'public');
         }
-
-        $passenger->update($validated);
-
-        return response()->json([
-            'message' => 'Passenger updated successfully',
-            'data' => $passenger
-        ]);
+        $passenger->save();
+        if($passenger->id){
+            DB::table('passenger_addresses')->where('passenger_id', $passenger->id)->where('typeset', 'primary')->update([
+                'address' => $request->input('address'),
+                'city' => $request->input('city'),
+                'postal_code' => $request->input('postal_code'),
+                'subpoint' => $subpoint,
+                'latitude' => $request->input('latitude'),
+                'longitude' => $request->input('longitude'),
+                'status' => 1,
+            ]);
+        }
+        return redirect()->back()->with('success', 'Passenger updated successfully');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
         $passenger = Passenger::findOrFail($id);
 

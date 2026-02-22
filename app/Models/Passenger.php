@@ -15,7 +15,6 @@ class Passenger extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'distributor',
         'fullname',
         'email',
         'country_code',
