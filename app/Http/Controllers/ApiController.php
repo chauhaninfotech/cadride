@@ -61,4 +61,8 @@ class ApiController extends Controller
             'token_type' => 'Bearer',
         ], 201);
     }
+    
+    public function apiTest(){
+        return 'Hello Mukesh';
+    }
 }
