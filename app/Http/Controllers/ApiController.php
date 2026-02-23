@@ -23,16 +23,7 @@ class ApiController extends Controller
             'password' => 'required',
         ]);
 
-        // Attempt to authenticate the user
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $user = Auth::user();
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return response()->json([
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-            ]);
-        }
+     
 
         return response()->json(['message' => 'Invalid credentials'], 401);
     }
