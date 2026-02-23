@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="page-header" style="margin-bottom: 0px; padding: 15px 0px;">
               <h3 class="page-title">
-                 <i class="fa fa-user"></i> Active Passenger List
+                 <i class="fa fa-user"></i> Pending Passenger List
               </h3>
               <nav aria-label="breadcrumb">
                 <ul class="breadcrumb">
@@ -18,7 +18,8 @@
         <div class="col-lg-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <form method="GET" action="{{ url('passenger-list') }}" class="mb-3">
+                    <button class="btn btn-success mb-3" id="verifySelected">Verify Selected</button>
+                    <form method="GET" action="{{ url('passenger-pendinglist') }}" class="mb-3">
                       <div class="row">
                         <div class="col-md-3" >
                           <div class="input-group">
@@ -45,11 +46,14 @@
                         </div>
                       </div>
                     </form>
+                    
                     <div class="table-responsive">
                       <table class="table table-striped">
                         <thead>
+                        
                           <tr>
                                 <th style="width: 50px;">#</th>
+                                <th style="width: 50px;"><input type="checkbox" id="allCheck" /></th>
                                 <th style="width: 200px;">Name</th>
                                 <th style="width: 150px;">Contact Number</th>
                                 <th style="width: 250px;">Email</th>
@@ -64,6 +68,7 @@
                           @forelse($passengers as $key => $passenger)
                             <tr>
                                 <td>{{ $key + 1 }}</td>
+                                <td><input type="checkbox" class="passengerCheck" data-id="{{ $passenger->id }}" /></td>
                                 <td>{{ $passenger->fullname }} - {{ $passenger->id }} <b>{{ $passenger->subpoint }}</b> 
                                 
                               </td>
@@ -86,7 +91,7 @@
                                 <td>
                                     <a href="{{ route('passenger.edit', ['id' => $passenger->id]) }}"><i class="fa fa-edit"></i> </a>
                                     <a href="{{ route('passenger.show', ['id' => $passenger->id]) }}" ><i class="fa fa-eye"></i> </a>
-                                    <a href="{{ url('passenger-bookings/' . $passenger->id) }}" ><i class="fa fa-car"></i></a>
+                                    
                                 </td>
                                
                             </tr>
@@ -108,26 +113,71 @@
 <!-- jQuery FIRST -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<!-- SweetAlert2 SECOND -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
 
+$(document).ready(function () {
 
+$('#allCheck').on('change', function() {
+    $('.passengerCheck').prop('checked', $(this).prop('checked'));
+});
+
+$('#verifySelected').on('click', function() {
+    let selectedIds = $('.passengerCheck:checked').map(function() {
+        return $(this).data('id');
+    }).get();
+
+    if(selectedIds.length > 0) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You want to activate selected passengers?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, activate them!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{{ route('passenger.bulkActivate') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        ids: selectedIds
+                    },
+                    success: function(response) {
+                        Swal.fire(
+                            'Activated!',
+                            'Selected passengers have been activated.',
+                            'success'
+                        ).then(() => location.reload());
+                    },
+                    error: function() {
+                        Swal.fire(
+                            'Error!',
+                            'Something went wrong.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    } else {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one passenger to verify.',
+            'info'
+        );
+    }
+});
+
+});
+</script>
 <style>
-
-      .form-check.form-switch {
+    
+    .form-check.form-switch {
     min-height: auto;
     margin: 0px;
     margin-left: 20px;
 }
-.table td {
-    word-wrap: break-word;
-    overflow: hidden;
-  }
-
-  /* For longer text, truncate with ellipsis */
-  .table td {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .card .card-body {
-    padding: 40px 10px;
-}
-</style>

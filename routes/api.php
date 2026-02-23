@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\PassengerController;
+use App\Http\Controllers\ApiController;
 use Illuminate\Support\Facades\Route;
 
-Route::apiResource('passengers', PassengerController::class);
+Route::post('/login', [ApiController::class, 'apiLoginuser']);
+Route::post('/registration', [ApiController::class, 'apiRegistrationuser']);

@@ -30,7 +30,16 @@
               <div class="collapse" id="passenger">
                 <ul class="nav flex-column sub-menu">
                   <li class="nav-item">
-                    <a class="nav-link" href="{{ url('passenger-list') }}">List</a>
+                    <a class="nav-link" href="{{ url('passenger-list') }}">Active List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('passenger-inactivelist') }}">Inactive List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('passenger-pendinglist') }}">Pending List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('passenger-exportlist') }}">Export</a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="{{ url('passenger-add') }}">Add</a>
@@ -50,6 +59,15 @@
                 <ul class="nav flex-column sub-menu">
                   <li class="nav-item">
                     <a class="nav-link" href="{{ url('rider-list') }}">List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('rider-inactivelist') }}">Inactive List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('rider-pendinglist') }}">Pending List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('rider-exportlist') }}">Export</a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="{{ url('rider-add') }}">Add</a>
@@ -87,7 +105,7 @@
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#policies" aria-expanded="false" aria-controls="policies">
                 <i class="fa fa-shield"></i>
-                <span class="menu-title">Privacy Policies</span>
+                <span class="menu-title">Policies</span>
                 <i class="menu-arrow"></i>
                 
               </a>

@@ -30,11 +30,108 @@ class PassengerController extends Controller
         }
         
             $query->where('status', 1);
-        
-        $passengers = $query->latest()->paginate(Config::get('pagination.per_page'));
+        $perpage = request('perpage', Config::get('pagination.per_page', 10));
+
+        $passengers = $query->latest()->paginate($perpage);
         return view('user.passenger-list', compact('passengers'));
     }
+    public function pendingList()
+    {
+        $query = Passenger::query();
+        if (request('id')) {
+            $query->where('id', request('id'));
+        }
+        if (request('name')) {
+            $query->where('fullname', 'like', '%' . request('name') . '%');
+        }
+        if (request('contact')) {
+            $query->where('contact', 'like', '%' . request('contact') . '%');
+        }
+        
+            $query->where('status', 2);
+        $perpage = request('perpage', Config::get('pagination.per_page', 10));
+        $passengers = $query->latest()->paginate($perpage);
+        return view('user.passenger-pendinglist', compact('passengers'));
+    }
+    public function inactiveList()
+    {
+        $query = Passenger::query();
+        if (request('id')) {
+            $query->where('id', request('id'));
+        }
+        if (request('name')) {
+            $query->where('fullname', 'like', '%' . request('name') . '%');
+        }
+        if (request('contact')) {
+            $query->where('contact', 'like', '%' . request('contact') . '%');
+        }
+        
+            $query->where('status', 0);
+        $perpage = request('perpage', Config::get('pagination.per_page', 10));
+        $passengers = $query->latest()->paginate($perpage);
+        return view('user.passenger-inactivelist', compact('passengers'));
+    }
 
+    public function getSubpoints($cityId)
+    {
+        $subpoints = DB::table('subpoints')->where('city_id', $cityId)->pluck('name', 'id');
+        return response()->json($subpoints);
+    }
+
+    public function exportList()
+    {
+        $subpoints = [];
+        $query = Passenger::query();
+
+        $cities = DB::table('cities')->where('status', 1)->get();
+        if (request('city') ) {
+            $query->where('city', request('city'));
+        }
+        if (request('subpoint')) {
+            $query->where('subpoint', request('subpoint'));
+            $cityId = DB::table('cities')->where('name', request('city'))->value('id');
+            $subpoints = DB::table('subpoints')->where('city_id', $cityId)->get();  
+        }
+        $perpage = request('perpage', Config::get('pagination.per_page', 10));
+        $passengers = $query->latest()->paginate($perpage);
+        
+        return view('user.passenger-exportlist', compact('passengers', 'cities', 'subpoints'));
+    }
+
+    public function exportListCSV()
+    {
+        $query = Passenger::query();
+
+        if (request('city') ) {
+            $query->where('city', request('city'));
+        }
+        if (request('subpoint')) {
+            $query->where('subpoint', request('subpoint'));
+        }
+
+        $passengers = $query->latest()->get();
+
+        $filename = 'passengers_' . date('Ymd') . '.csv';
+        $handle = fopen($filename, 'w+');
+        fputcsv($handle, ['ID', 'Full Name', 'Email', 'Contact', 'Address', 'City', 'Subpoint', 'Status']);
+
+        foreach ($passengers as $passenger) {
+            fputcsv($handle, [
+                $passenger->id,
+                $passenger->fullname,
+                $passenger->email,
+                $passenger->contact,
+                $passenger->address,
+                $passenger->city,
+                $passenger->subpoint,
+                $passenger->status == 1 ? 'Active' : ($passenger->status == 0 ? 'Inactive' : 'Pending'),
+            ]);
+        }
+
+        fclose($handle);
+
+        return response()->download($filename)->deleteFileAfterSend(true);
+    }   
     public function passengerAdd()
     {
         return view('user.passenger-add');
@@ -88,25 +185,14 @@ class PassengerController extends Controller
         return redirect()->route('passenger-add')->with('success', 'Passenger added successfully');
     }
 
-    public function toggleVerify(Request $request)
+
+    public function bulkActivate(Request $request)
     {
-        $passenger = Passenger::findOrFail($request->id);
-        $passenger->verify = !$passenger->verify;
-        $passenger->save();
-        
-
-        return response()->json(['success' => true, 'message' => 'Passenger verification status updated successfully']);
+        $ids = $request->input('ids', []);
+        Passenger::whereIn('id', $ids)->update(['status' => 1]);
+        return response()->json(['message' => 'Selected passengers have been activated.']);
     }
-
-    public function toggleStatus(Request $request)
-    {
-        $passenger = Passenger::findOrFail($request->id);
-        $passenger->status = !$passenger->status;
-        $passenger->save();
-
-        return response()->json(['success' => true, 'message' => 'Passenger status updated successfully']);
-    }
-
+    
     public function edit(Request $request)
     {   $id = $request->query('id');
         $passenger = Passenger::findOrFail($id);

@@ -137,4 +137,27 @@
     function smalleWords(input) {
         input.value = input.value.toLowerCase();
     }
+
+    $(document).ready(function () {
+        $('#contact').on('input', function () {
+            var mobileNumber = $(this).val();
+
+            // Allow only digits
+            mobileNumber = mobileNumber.replace(/\D/g, '');
+
+            // Limit input to 10 digits
+            if (mobileNumber.length > 10) {
+                mobileNumber = mobileNumber.substring(0, 10);
+            }
+
+            $(this).val(mobileNumber);
+
+            // Show error if the number is not exactly 10 digits
+            if (mobileNumber.length === 10) {
+                $('#error-message').hide();
+            } else {
+                $('#error-message').show();
+            }
+        });
+    });
 </script>

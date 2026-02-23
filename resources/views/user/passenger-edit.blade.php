@@ -55,7 +55,12 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="contact">Contact</label>
-                                    <input type="text" class="form-control" id="contact" name="contact" value="{{ $passenger->contact }}" required>
+                                    <select style="width: 15%;display: inline-block;float:left; margin-top: 25px;padding: 16px;" class="form-control" name="country_code" id="country_code" required>
+
+                                            <option value="+1" {{ $passenger->country_code == '+1' ? 'selected' : '' }}>+1</option>
+                                            <option value="+91" {{ $passenger->country_code == '+91' ? 'selected' : '' }}>+91</option>
+                                    </select>
+                                    <input type="number" style="width: 85%; display: inline-block; float:left;" class="form-control" id="contact" name="contact" value="{{ $passenger->contact }}" required>
                                 </div>
                             </div>
                             
@@ -132,4 +137,27 @@
             document.getElementById('longitude').value = place.geometry.location.lng();
         });
     }
+
+    $(document).ready(function () {
+        $('#contact').on('input', function () {
+            var mobileNumber = $(this).val();
+
+            // Allow only digits
+            mobileNumber = mobileNumber.replace(/\D/g, '');
+
+            // Limit input to 10 digits
+            if (mobileNumber.length > 10) {
+                mobileNumber = mobileNumber.substring(0, 10);
+            }
+
+            $(this).val(mobileNumber);
+
+            // Show error if the number is not exactly 10 digits
+            if (mobileNumber.length === 10) {
+                $('#error-message').hide();
+            } else {
+                $('#error-message').show();
+            }
+        });
+    });
 </script>

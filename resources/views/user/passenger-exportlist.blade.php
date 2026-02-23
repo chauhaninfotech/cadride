@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="page-header" style="margin-bottom: 0px; padding: 15px 0px;">
               <h3 class="page-title">
-                 <i class="fa fa-user"></i> Active Passenger List
+                 <i class="fa fa-user"></i> Export Passenger List
               </h3>
               <nav aria-label="breadcrumb">
                 <ul class="breadcrumb">
@@ -18,37 +18,54 @@
         <div class="col-lg-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <form method="GET" action="{{ url('passenger-list') }}" class="mb-3">
+                    <form method="GET" action="{{ url('passenger-exportlist') }}" class="mb-3">
                       <div class="row">
                         <div class="col-md-3" >
                           <div class="input-group">
-                            <input type="number" name="id" class="form-control" placeholder="ID..." value="{{ request('id') }}">
+                            <select name="city" id="city" class="form-control form-select">
+                                <option value="">Select City...</option>
+                                @foreach($cities as $city)
+                                    <option data-id="{{ $city->id }}" value="{{ $city->name }}" {{ request('city') == $city->name ? 'selected' : '' }}>{{ $city->name }}</option>
+                                @endforeach
+                            </select>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="input-group">
-                            <input type="text" name="name" class="form-control" placeholder="Passenger Name..." value="{{ request('name') }}">
+                            <select name="subpoint" id="subpoint" class="form-control form-select">
+                                <option value="">Select Subpoint...</option>
+                                @foreach($subpoints as $subpoint)
+                                    <option value="{{ $subpoint->name }}" {{ request('subpoint') == $subpoint->name ? 'selected' : '' }}>{{ $subpoint->name }}</option>
+                                @endforeach
+                            </select>
                           </div>
                        </div>
-                       <div class="col-md-3" >
+                    
+                        <div class="col-md-2">
                           <div class="input-group">
-                            <input type="number" name="contact" class="form-control" placeholder="Mobile Number..." value="{{ request('contact') }}">
+                            <select name="status" id="status" class="form-control form-select" required>
+                                <option value="">Select Status...</option>
+                                <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Active</option>
+                                <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Pending</option>
+                                <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Inactive</option>
+                            </select>
                           </div>
-                        </div>
-                        
-                        <div class="col-md-3" style="padding: 0px;">
+                       </div>
+                        <div class="col-md-4" style="padding: 0px;">
                           <div class="input-group" style="float:left; width: 70px;">
                             <input type="number" style="padding:14px 8px;" name="perpage" class="form-control" placeholder="Per Page..." value="{{ request('perpage', Config::get('pagination.per_page')) }}">
                           </div>
                           <button type="submit" class="btn btn-primary">Search</button>
-                          <a href="{{ url('passenger-list') }}" style="padding: 14px 20px;" class="btn btn-secondary">Reset</a>
+                          <a href="{{ url('passenger-exportlist') }}" style="padding: 14px 20px;" class="btn btn-secondary">Reset</a>
+                            <a href="{{ route('passenger.exportlistcsv', request()->query()) }}" style="padding: 14px 20px;" class="btn btn-success">Export</a>
                         </div>
                       </div>
                     </form>
                     <div class="table-responsive">
                       <table class="table table-striped">
                         <thead>
-                          <tr>
+                          
+                            <tr>
                                 <th style="width: 50px;">#</th>
                                 <th style="width: 200px;">Name</th>
                                 <th style="width: 150px;">Contact Number</th>
@@ -59,6 +76,10 @@
                                 <th style="width: 150px;">Subpoint</th>
                                 <th style="width: 120px;">Status</th>
                                 </tr>
+     
+           
+                            
+                          
                         </thead>
                         <tbody>
                           @forelse($passengers as $key => $passenger)
@@ -83,11 +104,7 @@
                                     @endif
                                 </td>
                                 
-                                <td>
-                                    <a href="{{ route('passenger.edit', ['id' => $passenger->id]) }}"><i class="fa fa-edit"></i> </a>
-                                    <a href="{{ route('passenger.show', ['id' => $passenger->id]) }}" ><i class="fa fa-eye"></i> </a>
-                                    <a href="{{ url('passenger-bookings/' . $passenger->id) }}" ><i class="fa fa-car"></i></a>
-                                </td>
+                                
                                
                             </tr>
                             @empty
@@ -107,12 +124,31 @@
 @yield('script')
 <!-- jQuery FIRST -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
 
-
-
+    $('#city').on('change', function() {
+        var cityId = $(this).find(':selected').data('id');
+        if(cityId) {
+            $.ajax({
+                url: "{{ url('get-subpoints') }}/" + cityId,
+                type: "GET",
+                success: function(data) {
+                    $('#subpoint').empty().append('<option value="">Select Subpoint...</option>');
+                    $.each(data, function(key, value) {
+                        $('#subpoint').append('<option value="'+ value.name +'">'+ value.name +'</option>');
+                    });
+                }
+            });
+        } else {
+            $('#subpoint').empty().append('<option value="">Select Subpoint...</option>');
+        }
+    });
+});
+</script>
 <style>
-
-      .form-check.form-switch {
+    
+    .form-check.form-switch {
     min-height: auto;
     margin: 0px;
     margin-left: 20px;
@@ -130,4 +166,4 @@
   .card .card-body {
     padding: 40px 10px;
 }
-</style>
+  </style>

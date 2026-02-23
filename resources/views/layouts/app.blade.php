@@ -19,13 +19,18 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" type="text/css" href="assets/css/font-awesome.min.css">
 <style>
+.main-panel {
+    width: calc(100% - 165px);
+}
 .content-wrapper {
     background: #FFFAFB;
+    padding: 10px;
 }
 
 
 .sidebar {
     background: #FFE9F0;
+        width: 165px;
 }
 .navbar .navbar-brand-wrapper .navbar-brand img {
     height: 70px;
@@ -39,6 +44,9 @@ li.nav-item {
 .sidebar .nav .nav-item.active, .sidebar .nav .nav-item:hover {
     background: #FFFAFB;
     color: #000;
+}
+.sidebar .nav .nav-item {
+    padding: 0 7px;
 }
 .sidebar .nav.sub-menu .nav-item .nav-link.active {
     color: #000 !important;

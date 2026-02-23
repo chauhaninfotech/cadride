@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="page-header" style="margin-bottom: 0px; padding: 15px 0px;">
               <h3 class="page-title">
-                 <i class="fa fa-user"></i> Active Passenger List
+                 <i class="fa fa-user"></i> Inactive Passenger List
               </h3>
               <nav aria-label="breadcrumb">
                 <ul class="breadcrumb">
@@ -18,7 +18,7 @@
         <div class="col-lg-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <form method="GET" action="{{ url('passenger-list') }}" class="mb-3">
+                    <form method="GET" action="{{ url('passenger-inactivelist') }}" class="mb-3">
                       <div class="row">
                         <div class="col-md-3" >
                           <div class="input-group">
@@ -86,7 +86,7 @@
                                 <td>
                                     <a href="{{ route('passenger.edit', ['id' => $passenger->id]) }}"><i class="fa fa-edit"></i> </a>
                                     <a href="{{ route('passenger.show', ['id' => $passenger->id]) }}" ><i class="fa fa-eye"></i> </a>
-                                    <a href="{{ url('passenger-bookings/' . $passenger->id) }}" ><i class="fa fa-car"></i></a>
+                                    
                                 </td>
                                
                             </tr>
@@ -107,8 +107,6 @@
 @yield('script')
 <!-- jQuery FIRST -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-
 
 <style>
 

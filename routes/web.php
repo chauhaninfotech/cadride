@@ -24,12 +24,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/passenger-add', [PassengerController::class, 'passengerAdd'])->name('passenger-add');
     Route::post('/passenger-store', [PassengerController::class, 'store'])->name('passenger.store');
     Route::get('/passenger-list', [PassengerController::class, 'index'])->name('passenger-list');
-    Route::post('/passenger-verify', [PassengerController::class, 'toggleVerify'])->name('passenger.verify');
-    Route::post('/passenger-status', [PassengerController::class, 'toggleStatus'])->name('passenger.status');
+    Route::get('/passenger-inactivelist', [PassengerController::class, 'inactiveList'])->name('passenger.inactivelist');
+    Route::get('/passenger-pendinglist', [PassengerController::class, 'pendingList'])->name('passenger.pendinglist');
+    Route::get('/passenger-exportlist', [PassengerController::class, 'exportList'])->name('passenger.exportlist');
+    Route::get('/get-subpoints/{cityId}', [PassengerController::class, 'getSubpoints'])->name('get.subpoints');
+   
+  
     Route::delete('/passenger-delete', [PassengerController::class, 'destroy'])->name('passenger.delete');
     Route::get('/passenger-edit', [PassengerController::class, 'edit'])->name('passenger.edit');
     Route::post('/passenger-update', [PassengerController::class, 'update'])->name('passenger.update');
     Route::get('/passenger-view', [PassengerController::class, 'show'])->name('passenger.show');
+    Route::get('/passenger-exportlistcsv', [PassengerController::class, 'exportListCSV'])->name('passenger.exportlistcsv');
+    Route::post('/bulkActivate', [PassengerController::class, 'bulkActivate'])->name('passenger.bulkActivate');
     Route::get('/passenger-bookings', [PassengerController::class, 'bookings'])->name('passenger.bookings');
 
     Route::get('/privacy-policy', [AdminCoontroller::class, 'privacyPolicy'])->name('privacy-policy');
