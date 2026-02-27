@@ -3,7 +3,7 @@
         <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start" >
           
           <a class="navbar-brand brand-logo" href="{{ route('dashboard') }}">
-                  <img src="{{ Storage::url('passengers/b3hFsArVMLTpOVdj2iWzoTq9Y68GGrmWz1D5l0tp.png') }}" alt="Cadride Logo">
+                  <img src="{{ asset('assets/images/logo.png') }}" alt="Cadride Logo">
                    
                         
                     </a>

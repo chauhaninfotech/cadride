@@ -144,16 +144,28 @@ class PassengerController extends Controller
         if ($request->input('city') && $request->input('postal_code')) {
             $subpoint = Helpers::getSubpointName($request->input('postal_code'));
             if (!$subpoint) {
-                return redirect()->back()->with('error', 'Subpoint Not Found. Please check the city and postal code.');
+                $subpoint = 'Empty';
             }
         } 
+        if($request->input('email')){
+            $existingPassenger = Passenger::where('email', $request->input('email'))->first();
+            if ($existingPassenger) {
+                return redirect()->back()->withInput()->with('error', 'Email already exists. Please use a different email address.');
+            }
+        }
+        if($request->input('contact')){
+            $existingPassengerContact = Passenger::where('contact', $request->input('contact'))->first();
+            if ($existingPassengerContact) {
+                return redirect()->back()->withInput()->with('error', 'Contact number already exists. Please use a different contact number.');
+            }
+        }
         
         $table = new Passenger();
         $table->fullname = $request->input('fullname');
         $table->email = $request->input('email');
         $table->country_code = $request->input('country_code');
         $table->contact = $request->input('contact');
-        $table->password = Hash::make($request->input('password'));
+        $table->password = Hash::make(12345678);
         $table->address = $request->input('address');   
         $table->city = $request->input('city');
         $table->subpoint = $subpoint;
@@ -161,7 +173,7 @@ class PassengerController extends Controller
         $table->latitude = $request->input('latitude');
         $table->longitude = $request->input('longitude');
 
-        $table->verify = 0;
+     
         $table->status = 1;
         $table->is_first_booking =  0;
         if ($request->hasFile('user_image')) {
@@ -208,10 +220,11 @@ class PassengerController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, string $id)
+    public function show(Request $request)
     {
+        $id = $request->query('id');
         $passenger = Passenger::findOrFail($id);
-        return response()->json($passenger);
+        return view('user.passenger-view', compact('passenger'));
     }
 
     /**
@@ -222,9 +235,21 @@ class PassengerController extends Controller
         if ($request->input('city') && $request->input('postal_code')) {
             $subpoint = Helpers::getSubpointName($request->input('postal_code'));
             if (!$subpoint) {
-                return redirect()->back()->with('error', 'Subpoint Not Found. Please check the city and postal code.');
+               $subpoint = 'Empty';
             }
         } 
+            if($request->input('email')){
+                $existingPassenger = Passenger::where('email', $request->input('email'))->where('id', '!=', $request->input('id'))->first();
+                if ($existingPassenger) {
+                    return redirect()->back()->withInput()->with('error', 'Email already exists. Please use a different email address.');
+                }
+            }
+            if($request->input('contact')){
+                $existingPassengerContact = Passenger::where('contact', $request->input('contact'))->where('id', '!=', $request->input('id'))->first();
+                if ($existingPassengerContact) {
+                    return redirect()->back()->withInput()->with('error', 'Contact number already exists. Please use a different contact number.');
+                }
+            }
         $id = $request->input('id');
         $passenger = Passenger::findOrFail($id);
         $passenger->fullname = $request->input('fullname');

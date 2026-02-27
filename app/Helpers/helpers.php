@@ -41,5 +41,20 @@ public static function getSubpointName($postalCode) {
     return $subpoint ? $subpoint->subpoint : null;
 }
 
+public static function updateFCMToken($table, $userId, $fcmToken) {
+    $count = DB::table($table)->where('id', $userId)->count();
+    if($count > 0){
+        DB::table($table)->where('id', $userId)->update(['fcm_token' => $fcmToken]);
+        return true;
+    }else{
+        return false;
+    }
+}
+
+    public static function getAddressDetails($tb, $addressId) {
+        $address = DB::table($tb)->where('id', $addressId)->first();
+        return $address;
+    }
 
 }
+

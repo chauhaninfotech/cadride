@@ -31,19 +31,19 @@
                     @csrf
                     <div class="cst_sec">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="name">Name</label>
                                     <input type="text" oninput="capitalizeWords(this)" class="form-control" id="fullname" name="fullname" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="email">Email</label>
                                     <input type="email" oninput="smalleWords(this)" class="form-control" id="email" name="email" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="contact">Contact</label>
                                     <select style="width: 15%;display: inline-block;float:left; margin-top: 25px;padding: 16px;" class="form-control" name="country_code" id="country_code" required>
@@ -54,16 +54,11 @@
                                     <input type="number" style="width: 85%; display: inline-block; float:left;" class="form-control" id="contact" name="contact" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="password">Password</label>
-                                    <input type="password" class="form-control" id="password" name="password" required>
-                                </div>
-                            </div>
+                         
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="address">Address</label>
-                                    <input type="text" class="form-control" id="address" name="address" />
+                                    <input type="text" class="form-control" id="address" name="address" onKeyup="initGoogle();" />
                                 </div>
                             </div> 
                             <div class="col-md-6">
@@ -103,61 +98,3 @@
               </div>
     </div>
 </x-app-layout>
-@yield('script')
-
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqDeI1dXB5eZnzzGcqepqwzqn9HYk2LzY&libraries=places&callback=initGoogle" async defer></script>
-<script>
-    function initGoogle() {
-        var input = document.getElementById('address');
-        var autocomplete = new google.maps.places.Autocomplete(input);
-        autocomplete.addListener('place_changed', function() {
-            var place = autocomplete.getPlace();
-            var postalCode = '';
-            var city = '';
-            for (var i = 0; i < place.address_components.length; i++) {
-                var component = place.address_components[i];
-                if (component.types.includes('postal_code')) {
-                    postalCode = component.long_name;
-                }
-                if (component.types.includes('locality')) {
-                    city = component.long_name;
-                }
-            }
-            document.getElementById('postal_code').value = postalCode;
-            document.getElementById('city').value = city;
-            document.getElementById('latitude').value = place.geometry.location.lat();
-            document.getElementById('longitude').value = place.geometry.location.lng();
-        });
-    }
-    function capitalizeWords(input) {
-        input.value = input.value.replace(/\b\w/g, function(char) {
-            return char.toUpperCase();
-        });
-    }
-    function smalleWords(input) {
-        input.value = input.value.toLowerCase();
-    }
-
-    $(document).ready(function () {
-        $('#contact').on('input', function () {
-            var mobileNumber = $(this).val();
-
-            // Allow only digits
-            mobileNumber = mobileNumber.replace(/\D/g, '');
-
-            // Limit input to 10 digits
-            if (mobileNumber.length > 10) {
-                mobileNumber = mobileNumber.substring(0, 10);
-            }
-
-            $(this).val(mobileNumber);
-
-            // Show error if the number is not exactly 10 digits
-            if (mobileNumber.length === 10) {
-                $('#error-message').hide();
-            } else {
-                $('#error-message').show();
-            }
-        });
-    });
-</script>

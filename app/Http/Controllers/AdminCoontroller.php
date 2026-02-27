@@ -143,11 +143,93 @@ class AdminCoontroller extends Controller
    public function passengerList(){
     return view('user.passenger-list');
    }
+
    public function checkQuery(Request $request){
-    $query = $request->input('query');
+
+      $pickup_available_status = 0;
+      $pickup_available_message = '';
+		$dropup_available_status = 0;
+		$dropup_available_message = '';
+
+      if($request->pickup_city != ''){
+        $pickup_city = $request->pickup_city;    
+		$pickup_postal_code = $request->pickup_postal_code;
+      
+        $pickupcityCount = DB::table('cities')->where('name',$pickup_city)->where('status',1)->count();
+
+
+        if($pickupcityCount > 0){
+            $pickupcity = DB::table('cities')->where('name',$pickup_city)->where('status',1)->first();
+            $pickupsubpointCount =  DB::table('postal_codes')->where('name',$pickup_postal_code)->where('city_id',$pickupcity->id)->where('status','1')->count();
+            if($pickupsubpointCount == 0){
+				$pickup_postal_code = substr($pickup_postal_code,0,3);
+				$pickupsubpointCount =  DB::table('postal_codes')->where('name',$pickup_postal_code)->where('city_id',$pickupcity->id)->where('status','1')->count();
+			}
+       
+            if($pickupsubpointCount > 0){
+                $pickupzipcode =  DB::table('postal_codes')->where('name',$pickup_postal_code)->where('city_id',$pickupcity->id)->where('status','1')->first();
+				$pickupsubpoint =  DB::table('subpoints')->where('name',$pickupzipcode->subpoint)->where('status','1')->first();
+                $pickup_available = ($pickupsubpoint->is_available == 1) ? 'Yes' : 'No' ;
+                $pickup_available_status = ($pickupsubpoint->is_available == 1) ? 1 : 0 ;
+                
+                $pickup_subpoint = $pickupsubpoint->name;
+                $pickup_available_message = $pickup_available."! we are provide pickup service on ".$pickup_city." City and ".$pickup_subpoint." Subpoint.";
+                 
+            }else{
+                $pickup_available_message = "No! because subpoint not found.";
+            }
+        }else{
+            $pickup_available_message = "No! because ".$pickup_city." city have not added.";
+        }
+		}
+        if($request->dropup_city != ''){
+	
+		$dropup_city = $request->dropup_city;
+        $dropup_postal_code = $request->dropup_postal_code;
+        $dropupcityCount = DB::table('cities')->where('name',$dropup_city)->where('status',1)->count();
+		
+		
+			
+        if($dropupcityCount > 0){
+			
+			$dropupcity = DB::table('cities')->where('name',$dropup_city)->where('status',1)->first();
+			$dropupsubpointCount =  DB::table('postal_codes')->where('name',$dropup_postal_code)->where('city_id',$dropupcity->id)->where('status','1')->count();		
+			if($dropupsubpointCount == 0){
+				$dropup_postal_code = substr($dropup_postal_code,0,3);
+				$dropupsubpointCount =  DB::table('postal_codes')->where('name',$dropup_postal_code)->where('city_id',$dropupcity->id)->where('status','1')->count();
+			}
+		
+            
+            
+            if($dropupsubpointCount > 0){
+				
+				$dropupzipcode =  DB::table('postal_codes')->where('name',$dropup_postal_code)->where('city_id',$dropupcity->id)->where('status','1')->first();
+				
+                $dropupsubpoint =  DB::table('subpoints')->where('name',$dropupzipcode->subpoint)->where('status','1')->first();
+                $dropup_available = ($dropupsubpoint->is_available == 1) ? 'Yes' : 'No' ;
+                $dropup_available_status = ($dropupsubpoint->is_available == 1) ? 1 : 0 ;
+                $dropup_subpoint = $dropupsubpoint->name;
+                $dropup_available_message = $dropup_available."! we are provide dropup service on ".$dropup_city." City and ".$dropup_subpoint." Subpoint.";
     
-    return back()->with('success', 'Your query has been submitted successfully!');
+            }else{
+                $dropup_available_message = "No! because subpoint not found.";
+            }
+        }else{
+            $dropup_available_message = "No! because ".$dropup_city." City have not added.";
+        }
+		}
+        
+   
+      return redirect()->back()->withInput()->with([
+         'pickup_available_message' => $pickup_available_message,
+         'pickup_available_status' => $pickup_available_status,
+         'dropup_available_message' => $dropup_available_message,
+         'dropup_available_status' => $dropup_available_status
+      ]);
    }
+
+
+
    public function passengerAdd(){
     return view('user.passenger-add');
    }

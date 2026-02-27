@@ -3,10 +3,11 @@
 use App\Http\Controllers\AdminCoontroller;
 use App\Http\Controllers\PassengerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RiderController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
 Route::get('/dashboard', function () {
@@ -18,7 +19,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/query', [AdminCoontroller::class, 'query'])->name('query');
+    Route::get('/query', function () {
+    $pickup_available_message = '';
+    $dropup_available_message = '';
+    $pickup_available_status = 0;
+    $dropup_available_status = 0;
+    return view('query',compact('pickup_available_message','dropup_available_message','pickup_available_status','dropup_available_status'));
+    });
+    
     Route::post('/query', [AdminCoontroller::class, 'checkQuery'])->name('query.check');
 
     Route::get('/passenger-add', [PassengerController::class, 'passengerAdd'])->name('passenger-add');
@@ -28,8 +36,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/passenger-pendinglist', [PassengerController::class, 'pendingList'])->name('passenger.pendinglist');
     Route::get('/passenger-exportlist', [PassengerController::class, 'exportList'])->name('passenger.exportlist');
     Route::get('/get-subpoints/{cityId}', [PassengerController::class, 'getSubpoints'])->name('get.subpoints');
-   
-  
     Route::delete('/passenger-delete', [PassengerController::class, 'destroy'])->name('passenger.delete');
     Route::get('/passenger-edit', [PassengerController::class, 'edit'])->name('passenger.edit');
     Route::post('/passenger-update', [PassengerController::class, 'update'])->name('passenger.update');
@@ -37,6 +43,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/passenger-exportlistcsv', [PassengerController::class, 'exportListCSV'])->name('passenger.exportlistcsv');
     Route::post('/bulkActivate', [PassengerController::class, 'bulkActivate'])->name('passenger.bulkActivate');
     Route::get('/passenger-bookings', [PassengerController::class, 'bookings'])->name('passenger.bookings');
+
+    Route::get('/rider-add', [RiderController::class, 'riderAdd'])->name('rider-add');
+    Route::post('/rider-store', [RiderController::class, 'store'])->name('rider.store');
+    Route::get('/rider-list', [RiderController::class, 'index'])->name('rider-list');
+    Route::get('/rider-inactivelist', [RiderController::class, 'inactiveList'])->name('rider.inactivelist');
+    Route::get('/rider-pendinglist', [RiderController::class, 'pendingList'])->name('rider.pendinglist');
+    Route::get('/rider-exportlist', [RiderController::class, 'exportList'])->name('rider.exportlist');
+    Route::delete('/rider-delete', [RiderController::class, 'destroy'])->name('rider.delete');
+    Route::get('/rider-edit', [RiderController::class, 'edit'])->name('rider.edit');
+    Route::post('/rider-update', [RiderController::class, 'update'])->name('rider.update');
+    Route::get('/rider-view', [RiderController::class, 'show'])->name('rider.show');
+    Route::post('/rider-view', [RiderController::class, 'updateRiderView'])->name('rider.updateView');
+    Route::get('/rider-exportlistcsv', [RiderController::class, 'exportListCSV'])->name('rider.exportlistcsv');
+    Route::post('/rider-bulkActivate', [RiderController::class, 'bulkActivate'])->name('rider.bulkActivate');
+    Route::get('/get-address-details/{addressId}', [RiderController::class, 'getAddressDetails'])->name('rider.getAddressDetails');
+
+ 
 
     Route::get('/privacy-policy', [AdminCoontroller::class, 'privacyPolicy'])->name('privacy-policy');
     Route::get('/booking-policy', [AdminCoontroller::class, 'bookingPolicy'])->name('booking-policy');
