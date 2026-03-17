@@ -443,6 +443,79 @@ class AdminCoontroller extends Controller
       return back()->with('success', 'Shift has been deleted successfully!');
    }
 
+   public function carouselList(Request $request){
+      $query = filter_var(request('status')) ? request('status') : '';
+      $type = filter_var(request('type')) ? request('type') : '';
+      $carousels = DB::table('carousels')
+         ->when($query, function ($queryBuilder) use ($query) {
+            return $queryBuilder->where('status', $query);
+         })
+         ->when($type, function ($queryBuilder) use ($type) {
+            return $queryBuilder->where('type', $type);
+         })
+         ->orderBy('id', 'desc')
+         ->paginate(Config::get('pagination.per_page'))
+         ->withQueryString();
+      return view('carousel.list', compact('carousels'));
+   }
+
+   public function carouselAdd(){
+      return view('carousel.add');
+   }
+   public function postCarousel(Request $request){
+      $type = $request->input('type');
+      $link = $request->input('link');
+      $sort = $request->input('sort');
+      $status = $request->input('status');
+      if($request->hasFile('image_path')){
+         $file = $request->file('image_path');
+         $filename = time().'_'.$file->getClientOriginalName();
+         $filePath = $file->storeAs('public/carousel', $filename);
+         $imagePath = 'storage/carousel/' . $filename;
+         DB::table('carousels')->insert(
+            ['type' => strtoupper($type), 'link' => $link, 'sort' => $sort, 'status' => $status, 'image_path' => $imagePath]  
+         );
+         return back()->with('success', 'Carousel has been added successfully!');
+      }else{
+         return back()->with('error', 'Image upload failed. Please try again.');
+      }
+   }
+
+   public function editCarousel(Request $request){
+      $id = $request->query('id');
+      $carousel = DB::table('carousels')->where('id', $id)->first();
+      if (!$carousel) {
+         return redirect()->route('carousel.list')->with('error', 'Carousel not found.');
+      }
+      return view('carousel.edit', compact('carousel'));
+   }
+   public function postEditCarousel(Request $request){
+      $id = $request->input('id');
+      $type = $request->input('type');
+      $link = $request->input('link');
+      $sort = $request->input('sort');
+      $status = $request->input('status');
+      if($request->hasFile('image_path')){
+         $file = $request->file('image_path');
+         $filename = time().'_'.$file->getClientOriginalName();
+         $filePath = $file->storeAs('public/carousel', $filename);
+         $imagePath = 'storage/carousel/' . $filename;
+         DB::table('carousels')->where('id', $id)->update(
+            ['type' => strtoupper($type), 'link' => $link, 'sort' => $sort, 'status' => $status, 'image_path' => $imagePath]  
+         );
+         return back()->with('success', 'Carousel has been updated successfully!');
+      }else{
+         DB::table('carousels')->where('id', $id)->update(
+            ['type' => strtoupper($type), 'link' => $link, 'sort' => $sort, 'status' => $status]  
+         );
+         return back()->with('success', 'Carousel has been updated successfully!');
+      }
+   }
+   public function deleteCarousel($id){
+      DB::table('carousels')->where('id', $id)->delete();
+      return back()->with('success', 'Carousel has been deleted successfully!');
+   }
+
 
 }
 

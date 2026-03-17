@@ -22,12 +22,19 @@
 .main-panel {
     width: calc(100% - 165px);
 }
+.fa {
+    color: #F69EAF;
+}
 .content-wrapper {
     background: #FFFAFB;
     padding: 10px;
 }
-
-
+.table td {
+    color: #858796;
+}
+table {
+    border-color: #ccc !important;
+}
 .sidebar {
     background: #FFE9F0;
         width: 165px;
@@ -77,6 +84,13 @@ span.menu-title, sidebar .nav .nav-item .nav-link i.menu-arrow:before {
     opacity: 0;
     display: inline-block;
     animation: fadeUp 0.6s forwards;
+}
+button.btn.btn-primary, button.btn.btn-primary:hover {
+    background: #DC1921;
+    border: 1px solid #DC1921;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice{
+    padding: 10px 5px !important;
 }
 
 @keyframes fadeUp {
@@ -254,11 +268,16 @@ img{
     <script src="assets/js/todolist.js"></script>
     <script src="assets/js/jquery.cookie.js"></script>
     <script src="assets/js/dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqDeI1dXB5eZnzzGcqepqwzqn9HYk2LzY&libraries=places&callback=initGoogle" async defer></script>  
 <script>
+    
     function initGoogle() {
         var input = document.getElementById('address');
-        var autocomplete = new google.maps.places.Autocomplete(input);
+        var autocomplete = new google.maps.places.Autocomplete(input, {
+            componentRestrictions: { country: "ca" }, // restrict to Canada
+            types: ["address"] // optional: only address results
+        });
         autocomplete.addListener('place_changed', function() {
             var place = autocomplete.getPlace();
             var postalCode = '';
@@ -276,6 +295,7 @@ img{
             document.getElementById('city').value = city;
             document.getElementById('latitude').value = place.geometry.location.lat();
             document.getElementById('longitude').value = place.geometry.location.lng();
+            document.getElementById('latlong').value = place.geometry.location.lat() + ',' +  place.geometry.location.lng();
         });
     }
 

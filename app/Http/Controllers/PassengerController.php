@@ -28,6 +28,9 @@ class PassengerController extends Controller
         if (request('contact')) {
             $query->where('contact', 'like', '%' . request('contact') . '%');
         }
+        if(request('email')) {
+            $query->where('email', 'like', '%' . request('email') . '%');
+        }
         
             $query->where('status', 1);
         $perpage = request('perpage', Config::get('pagination.per_page', 10));
@@ -65,7 +68,9 @@ class PassengerController extends Controller
         if (request('contact')) {
             $query->where('contact', 'like', '%' . request('contact') . '%');
         }
-        
+        if(request('email')) {
+            $query->where('email', 'like', '%' . request('email') . '%');
+        }
             $query->where('status', 0);
         $perpage = request('perpage', Config::get('pagination.per_page', 10));
         $passengers = $query->latest()->paginate($perpage);
@@ -92,7 +97,12 @@ class PassengerController extends Controller
             $cityId = DB::table('cities')->where('name', request('city'))->value('id');
             $subpoints = DB::table('subpoints')->where('city_id', $cityId)->get();  
         }
+        if (request('status') || request('status') === '0') {
+            $query->where('status', request('status'));
+        }
         $perpage = request('perpage', Config::get('pagination.per_page', 10));
+
+       // print_r($query->toSql());exit;
         $passengers = $query->latest()->paginate($perpage);
         
         return view('user.passenger-exportlist', compact('passengers', 'cities', 'subpoints'));
@@ -111,19 +121,22 @@ class PassengerController extends Controller
 
         $passengers = $query->latest()->get();
 
-        $filename = 'passengers_' . date('Ymd') . '.csv';
+        $filename = 'passengers_' . date('dmY') . '.csv';
         $handle = fopen($filename, 'w+');
-        fputcsv($handle, ['ID', 'Full Name', 'Email', 'Contact', 'Address', 'City', 'Subpoint', 'Status']);
+        fputcsv($handle, ['#','Name','ID', 'Contact', 'Email',  'Address', 'Postal Code	', 'City', 'Subpoint', 'Lat,Long', 'Status']);
 
-        foreach ($passengers as $passenger) {
+        foreach ($passengers as $key => $passenger) {
             fputcsv($handle, [
-                $passenger->id,
+                $key + 1,
                 $passenger->fullname,
-                $passenger->email,
+                $passenger->id,
                 $passenger->contact,
+                $passenger->email,
                 $passenger->address,
+                $passenger->postal_code,
                 $passenger->city,
                 $passenger->subpoint,
+                $passenger->latitude . ',' . $passenger->longitude,
                 $passenger->status == 1 ? 'Active' : ($passenger->status == 0 ? 'Inactive' : 'Pending'),
             ]);
         }
@@ -163,6 +176,7 @@ class PassengerController extends Controller
         $table = new Passenger();
         $table->fullname = $request->input('fullname');
         $table->email = $request->input('email');
+        
         $table->country_code = $request->input('country_code');
         $table->contact = $request->input('contact');
         $table->password = Hash::make(12345678);
@@ -170,6 +184,7 @@ class PassengerController extends Controller
         $table->city = $request->input('city');
         $table->subpoint = $subpoint;
         $table->postal_code = $request->input('postal_code');
+        $table->role = 'passenger';
         $table->latitude = $request->input('latitude');
         $table->longitude = $request->input('longitude');
 
@@ -183,7 +198,7 @@ class PassengerController extends Controller
 
         if($table->id){
             DB::table('passenger_addresses')->insert([
-                'passenger_id' => $table->id,
+                'user_id' => $table->id,
                 'typeset' => 'primary',
                 'address' => $request->input('address'),
                 'city' => $request->input('city'),
@@ -274,7 +289,7 @@ class PassengerController extends Controller
         }
         $passenger->save();
         if($passenger->id){
-            DB::table('passenger_addresses')->where('passenger_id', $passenger->id)->where('typeset', 'primary')->update([
+            DB::table('passenger_addresses')->where('user_id', $passenger->id)->where('typeset', 'primary')->update([
                 'address' => $request->input('address'),
                 'city' => $request->input('city'),
                 'postal_code' => $request->input('postal_code'),
@@ -304,5 +319,20 @@ class PassengerController extends Controller
         return response()->json([
             'message' => 'Passenger deleted successfully'
         ]);
+    }
+
+    public function passengerAddress($user_id, $address){
+         $address = DB::table('passenger_addresses')->where('user_id', $user_id)->where('address', $address)->first();
+            if ($address) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $address
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Address not found'
+                ], 404);
+            }
     }
 }

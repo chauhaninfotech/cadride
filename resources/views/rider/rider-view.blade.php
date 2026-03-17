@@ -344,7 +344,7 @@ $(document).ready(function() {
         var addressId = $(this).val();
         if (addressId) {
             $.ajax({
-                url: '/get-address-details/' + addressId,
+                url: '/get-address-details/rider_addresses/' + addressId,
                 type: 'GET',
                 success: function(data) { 
                  

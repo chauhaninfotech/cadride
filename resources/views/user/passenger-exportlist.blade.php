@@ -62,19 +62,21 @@
                       </div>
                     </form>
                     <div class="table-responsive">
-                      <table class="table table-striped">
+                      <table class="table table-striped table-bordered">
                         <thead>
                           
                             <tr>
-                                <th style="width: 50px;">#</th>
-                                <th style="width: 200px;">Name</th>
-                                <th style="width: 150px;">Contact Number</th>
-                                <th style="width: 250px;">Email</th>
-                                <th style="width: 300px;">Address</th>
-                                <th style="width: 100px;">Postal Code</th>
-                                <th style="width: 150px;">City</th>
-                                <th style="width: 150px;">Subpoint</th>
-                                <th style="width: 120px;">Status</th>
+                                <th class="sno">#</th>
+                                <th class="name">Name</th>
+                                <th class="id">ID</th>
+                                <th class="contact">Contact</th>
+                                <th class="email">Email</th>
+                                <th class="address">Address</th>
+                                <th class="postal-code">Postal Code</th>
+                                <th class="city">City</th>
+                                <th class="subpoint">Subpoint</th>
+                                <th class="lat-long">Lat, Long</th>
+                                <th class="status">Status</th>
                                 </tr>
      
            
@@ -84,17 +86,17 @@
                         <tbody>
                           @forelse($passengers as $key => $passenger)
                             <tr>
-                                <td>{{ $key + 1 }}</td>
-                                <td>{{ $passenger->fullname }} - {{ $passenger->id }} <b>{{ $passenger->subpoint }}</b> 
-                                
-                              </td>
-                                <td>{{ $passenger->contact }}</td>
-                                <td>{{ $passenger->email }}</td>
-                                <td>{{ $passenger->address }}</td>
-                                <td>{{ $passenger->postal_code }}</td>
-                                <td>{{ $passenger->city }}</td>
-                                <td>{{ $passenger->subpoint }}</td>
-                                <td>
+                                <td class="sno">{{ $key + 1 }}</td>
+                                <td class="name">{{ $passenger->fullname }}</td>
+                                <td class="id">{{ $passenger->id }}</td>
+                                <td class="contact">{{ $passenger->contact }}</td>
+                                <td class="email">{{ $passenger->email }}</td>
+                                <td class="address">{{ $passenger->address }}</td>
+                                <td class="postal-code">{{ $passenger->postal_code }}</td>
+                                <td class="city">{{ $passenger->city }}</td>
+                                <td class="subpoint">{{ $passenger->subpoint }}</td>
+                                <td class="lat-long">{{ $passenger->latitude }}, {{ $passenger->longitude }}</td>
+                                <td class="status">
                                     @if($passenger->status == 1)
                                         <span class="badge bg-success">Active</span>
                                     @elseif($passenger->status == 0)
@@ -153,17 +155,40 @@ $(document).ready(function () {
     margin: 0px;
     margin-left: 20px;
 }
-.table td {
-    word-wrap: break-word;
-    overflow: hidden;
-  }
 
-  /* For longer text, truncate with ellipsis */
-  .table td {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
   .card .card-body {
     padding: 40px 10px;
 }
+
+.table td{
+    white-space: normal !important;
+    line-height: 22px;
+}
+td.name {
+    max-width: 200px;
+}
+td.contact {
+    max-width: 150px;
+}
+td.email {
+    max-width: 250px;
+}
+td.address {
+    max-width: 300px;
+}
+td.postal-code {
+    max-width: 100px;
+}
+td.city {
+    max-width: 150px;
+}
+td.subpoint {
+    max-width: 150px;
+}
+td.status{
+    max-width: 100px;
+}
+td.actions {
+    max-width: 100px;
+} 
   </style>

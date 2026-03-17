@@ -26,16 +26,26 @@
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                       <div class="form-group">
                        <label for="pickup_zipcode">Pickup Zipcode</label>
                         <input type="text" class="form-control" id="postal_code" name="pickup_postal_code" readonly value="{{ old('pickup_postal_code') }}">
                       </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                       <div class="form-group">
                        <label for="pickup_city">Pickup City</label>
                         <input type="text" class="form-control" id="city" name="pickup_city" readonly value="{{ old('pickup_city') }}">
+                      </div>
+                    </div>
+                    <input type="hidden" class="form-control" id="longitude" name="pickup_longitude" readonly value="{{ old('pickup_longitude') }}">
+                        <input type="hidden" class="form-control" id="latitude" name="pickup_latitude" readonly value="{{ old('pickup_latitude') }}">
+                      
+                    
+                    <div class="col-md-4 col-sm-12"> 
+                      <div class="form-group">
+                      <label for="pickup_longitude">Lat, Long</label>
+                      <input class="form-control" type="text" id="latlong" name="pickup_latlong" value="{{ old('pickup_latlong') }}" />
                       </div>
                     </div>
                     <div class="col-md-12 col-sm-12">
@@ -53,18 +63,29 @@
                       <input type="text" class="form-control" id="address2" name="dropup_address" onKeyup="initGoogle2();" value="{{ old('dropup_address') }}" />
                     </div>
                   </div>
+                  
                   <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                       <div class="form-group">
                        <label for="dropoff_zipcode">Dropoff Zipcode</label>
                         <input type="text" class="form-control" id="postal_code2" name="dropup_postal_code" readonly value="{{ old('dropup_postal_code') }}">
                       </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                       <div class="form-group">
                        <label for="dropoff_city">Dropoff City</label>
                         <input type="text" class="form-control" id="city2" name="dropup_city" readonly value="{{ old('dropup_city') }}">
                       </div>
+                    </div>
+                    <input type="hidden" class="form-control" id="longitude2" name="dropup_longitude" readonly value="{{ old('dropup_longitude') }}">
+                        <input type="hidden" class="form-control" id="latitude2" name="dropup_latitude" readonly value="{{ old('dropup_latitude') }}">
+                      
+
+                    <div class="col-md-4 col-sm-4"> 
+                      <div class="form-group">
+                      <label for="dropoff_latlong">Lat, Long</label>
+                      <input type="text" class="form-control" id="latlong2" name="dropup_latlong" readonly value="{{ old('dropup_latlong') }}">
+                    </div>
                     </div>
                   </div>
                   <div class="row">
@@ -75,7 +96,7 @@
     </div>
 @endif        
 										  </div>
-                    <div class="text-end">
+                    <div class="text-end mt-4">
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
                   </div>
@@ -106,6 +127,7 @@
             document.getElementById('city2').value = city;
             document.getElementById('latitude2').value = place.geometry.location.lat();
             document.getElementById('longitude2').value = place.geometry.location.lng();
+            document.getElementById('latlong2').value = place.geometry.location.lat() + ',' +  place.geometry.location.lng();
         });
     }
 </script>

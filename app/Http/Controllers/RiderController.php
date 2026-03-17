@@ -43,9 +43,9 @@ class RiderController extends Controller
     public function show(Request $request)
     {
         $rider = Rider::findOrFail($request->input('id'));
-        $addresses = DB::table('rider_addresses')->where('rider_id', $rider->id)->get();
+        $addresses = DB::table('rider_addresses')->where('user_id', $rider->id)->get();
         $shiftsAll = DB::table('shifts')->where('status', 1)->get();
-        $slotAddress = DB::table('rider_shifts')->where('rider_id', $rider->id)->where('shift_date',date('Y-m-d'))->first();
+        $slotAddress = DB::table('rider_shifts')->where('user_id', $rider->id)->where('shift_date',date('Y-m-d'))->first();
         if(!$slotAddress){
             $slot = [];
             $addressSlot = [];
@@ -53,7 +53,7 @@ class RiderController extends Controller
         }else{
             $slotAddress->going_slot = json_decode($slotAddress->going_slot, true);
             $slotAddress->return_slot = json_decode($slotAddress->return_slot, true);
-            $addressSlot = DB::table('rider_addresses')->where('rider_id', $rider->id)->where('id', $slotAddress->address_id)->first();
+            $addressSlot = DB::table('rider_addresses')->where('user_id', $rider->id)->where('id', $slotAddress->address_id)->first();
 
             
         }
@@ -104,6 +104,7 @@ class RiderController extends Controller
         $table = new Rider();
         $table->fullname = $request->input('fullname');
         $table->email = $request->input('email');
+        $table->role = 'rider';
         $table->country_code = $request->input('country_code');
         $table->contact = $request->input('contact');
         $table->password = Hash::make(12345678);
@@ -128,7 +129,7 @@ class RiderController extends Controller
 
         if($table->id){
             DB::table('rider_addresses')->insert([
-                'rider_id' => $table->id,
+                'user_id' => $table->id,
                 'typeset' => 'primary',
                 'address' => $request->input('address'),
                 'city' => $request->input('city'),
@@ -182,8 +183,15 @@ class RiderController extends Controller
 
     public function exportList()
     {
+        $date = date('Y-m-d');
         $subpoints = [];
-        $query = Rider::query();
+        $query = Rider::join('rider_shifts', 'riders.id', '=', 'rider_shifts.user_id')->
+                join('rider_addresses', function($join) {
+                    $join->on('rider_shifts.address_id', '=', 'rider_addresses.id');
+                            
+                })
+            ->where('rider_shifts.shift_date', $date)
+            ->select('riders.*', 'rider_shifts.shift_date', 'rider_shifts.shift_day', 'rider_addresses.city', 'rider_addresses.subpoint');
 
         $cities = DB::table('cities')->where('status', 1)->get();
         if (request('city') ) {
@@ -194,7 +202,8 @@ class RiderController extends Controller
             $cityId = DB::table('cities')->where('name', request('city'))->value('id');
             $subpoints = DB::table('subpoints')->where('city_id', $cityId)->get();  
         }
-        $perpage = request('perpage', Config::get('pagination.per_page', 10));
+        
+        $perpage = request('perpage', 100);
         $riders = $query->latest()->paginate($perpage);
         
         return view('rider.rider-exportlist', compact('riders', 'cities', 'subpoints'));
@@ -298,7 +307,7 @@ class RiderController extends Controller
         }
         $rider->save();
         if($rider->id){
-            DB::table('rider_addresses')->where('rider_id', $rider->id)->where('typeset', 'primary')->update([
+            DB::table('rider_addresses')->where('user_id', $rider->id)->where('typeset', 'primary')->update([
                 'address' => $request->input('address'),
                 'city' => $request->input('city'),
                 'postal_code' => $request->input('postal_code'),
@@ -332,7 +341,7 @@ class RiderController extends Controller
             if(!empty($request->input('address'))){
 
                     DB::table('rider_addresses')->insert([
-                    'rider_id' => $id,
+                    'user_id' => $id,
                     'typeset' => 'secondary',
                     'address' => $request->input('address'),
                     'city' => $request->input('city'),
@@ -355,9 +364,9 @@ class RiderController extends Controller
             $shiftDay = date('l', strtotime($shiftDate));
             $goingTime = $request->input('going_time.' . $shiftDate, []);
             $returnTime = $request->input('return_time.' . $shiftDate, []);
-            $slotDate = DB::table('rider_shifts')->where('rider_id', $id)->where('shift_date', $shiftDate)->count();
+            $slotDate = DB::table('rider_shifts')->where('user_id', $id)->where('shift_date', $shiftDate)->count();
             if($slotDate > 0){
-                DB::table('rider_shifts')->where('rider_id', $id)->where('shift_date', $shiftDate)->update([
+                DB::table('rider_shifts')->where('user_id', $id)->where('shift_date', $shiftDate)->update([
                     'address_id' => $address_id,
                     'going_slot' => json_encode($goingTime),
                     'return_slot' => json_encode($returnTime),
@@ -365,7 +374,7 @@ class RiderController extends Controller
                 ]);
             } else {
                 DB::table('rider_shifts')->updateOrInsert(
-                    ['rider_id' => $id, 'address_id' => $address_id, 'shift_date' => $shiftDate],
+                    ['user_id' => $id, 'address_id' => $address_id, 'shift_date' => $shiftDate],
                     [
                         'shift_day' => $shiftDay,
                         'going_slot' => json_encode($goingTime),
@@ -379,9 +388,9 @@ class RiderController extends Controller
             return redirect()->back()->with('success', 'Rider availability updated successfully');
         }
 
-        public function getAddressDetails($addressId)
+        public function getAddressDetails($tb, $addressId)
         {
-            $address = DB::table('rider_addresses')->where('id', $addressId)->first();
+            $address = DB::table($tb)->where('id', $addressId)->first();
             if ($address) {
                 return response()->json([
                     'success' => true,

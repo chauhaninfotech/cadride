@@ -48,37 +48,37 @@
                     </form>
                     
                     <div class="table-responsive">
-                      <table class="table table-striped">
+                      <table class="table table-striped table-bordered">
                         <thead>
                         
                           <tr>
-                                <th style="width: 50px;">#</th>
-                                <th style="width: 50px;"><input type="checkbox" id="allCheck" /></th>
-                                <th style="width: 200px;">Name</th>
-                                <th style="width: 150px;">Contact Number</th>
-                                <th style="width: 250px;">Email</th>
-                                <th style="width: 300px;">Address</th>
-                                <th style="width: 100px;">Postal Code</th>
-                                <th style="width: 150px;">City</th>
-                                <th style="width: 150px;">Subpoint</th>
-                                <th style="width: 120px;">Status</th>
+                                <th class="sno" >#</th>
+                                <th class="select" ><input type="checkbox" id="allCheck" /></th>
+                                <th class="name" >Name</th>
+                                <th class="contact" >Contact Number</th>
+                                <th class="email" >Email</th>
+                                <th class="address">Address</th>
+                                <th class="postal-code">Postal Code</th>
+                                <th class="city">City</th>
+                                <th class="subpoint">Subpoint</th>
+                                <th class="status">Status</th>
                                 </tr>
                         </thead>
                         <tbody>
                           @forelse($riders as $key => $rider)
                             <tr>
-                                <td>{{ $key + 1 }}</td>
-                                <td><input type="checkbox" class="riderCheck" data-id="{{ $rider->id }}" /></td>
-                                <td>{{ $rider->fullname }} - {{ $rider->id }} <b>{{ $rider->subpoint }}</b> 
+                                <td class="sno">{{ $key + 1 }}</td>
+                                <td class="select"><input type="checkbox" class="riderCheck" data-id="{{ $rider->id }}" /></td>
+                                <td class="name">{{ $rider->fullname }} - {{ $rider->id }} <b><sub>( {{ $rider->subpoint }} )</sub></b></td>
                                 
                               </td>
-                                <td>{{ $rider->contact }}</td>
-                                <td>{{ $rider->email }}</td>
-                                <td>{{ $rider->address }}</td>
-                                <td>{{ $rider->postal_code }}</td>
-                                <td>{{ $rider->city }}</td>
-                                <td>{{ $rider->subpoint }}</td>
-                                <td>
+                                <td class="contact">{{ $rider->contact }}</td>
+                                <td class="email">{{ $rider->email }}</td>
+                                <td class="address">{{ $rider->address }}</td>
+                                <td class="postal-code">{{ $rider->postal_code }}</td>
+                                <td class="city">{{ $rider->city }}</td>
+                                <td class="subpoint">{{ $rider->subpoint }}</td>
+                                <td class="status">
                                     @if($rider->status == 1)
                                         <span class="badge bg-success">Active</span>
                                     @elseif($rider->status == 0)
@@ -88,9 +88,9 @@
                                     @endif
                                 </td>
                                 
-                                <td>
+                                <td class="actions">
                                     <a href="{{ route('rider.edit', ['id' => $rider->id]) }}"><i class="fa fa-edit"></i> </a>
-                                    <a href="{{ route('rider.show', ['id' => $rider->id]) }}" ><i class="fa fa-eye"></i> </a>
+                                    <br><a href="{{ route('rider.show', ['id' => $rider->id]) }}" ><i class="fa fa-eye"></i> </a>
                                     
                                 </td>
                                
@@ -181,3 +181,47 @@ $('#verifySelected').on('click', function() {
     margin: 0px;
     margin-left: 20px;
 }
+.table td {
+    word-wrap: break-word;
+    overflow: hidden;
+  }
+
+  /* For longer text, truncate with ellipsis */
+  .table td {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .card .card-body {
+    padding: 40px 10px;
+}
+.table td{
+    white-space: normal !important;
+    line-height: 22px;
+}
+td.name {
+    max-width: 200px;
+}
+td.contact {
+    max-width: 150px;
+}
+td.email {
+    max-width: 250px;
+}
+td.address {
+    max-width: 300px;
+}
+td.postal-code {
+    max-width: 100px;
+}
+td.city {
+    max-width: 150px;
+}
+td.subpoint {
+    max-width: 150px;
+}
+td.status{
+    max-width: 100px;
+}
+td.actions {
+    max-width: 100px;
+} 

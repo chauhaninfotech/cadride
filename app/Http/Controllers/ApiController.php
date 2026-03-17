@@ -30,7 +30,7 @@ class ApiController extends Controller
         if($user->email == $request->email && Hash::check($request->password, $user->password)) {
         
             // Authentication successful
-            if($user->status == '1'){
+            if($user->status == '1' || ($user->status == '2' && $request->role == 'passenger') || ($user->status == '1' && $request->role == 'rider' && $user->status == '1')){
                 $token = $token = Str::random(30);
                 DB::table($table)->where('id', $user->id)->update([
                     'otp_key' => $token
@@ -49,7 +49,7 @@ class ApiController extends Controller
         if($user->contact == $request->mobile) {
         
             // Authentication successful
-            if($user->status == '1'){
+            if($user->status == '1' || ($user->status == '2' && $request->role == 'passenger')){
                 Helpers::updateFCMToken($table, $user->id, $request->input('fcm_token'));
                 $token = Str::random(30);
                 DB::table($table)->where('id', $user->id)->update([
@@ -71,6 +71,7 @@ class ApiController extends Controller
     {
 
         $table = $request->role == 'passenger' ? 'passengers' : 'riders';
+        $table2 = $request->role == 'passenger' ? 'passenger_addresses' : 'rider_addresses';
         
         if (DB::table($table)->where('email', $request->email)->exists()) {
             return response()->json([
@@ -85,16 +86,22 @@ class ApiController extends Controller
          if ($request->input('city') && $request->input('postal_code')) {
             $subpoint = Helpers::getSubpointName($request->input('postal_code'));
             if (!$subpoint) {
-                return response()->json(['message' => 'Subpoint Not Found. Please check your address.'], 400);
+                $subpoint = 'Empty';
             }
         }
-         
+        if(!$request->input('latitude') || !$request->input('longitude')){
+            return response()->json([
+                'message' => 'No proper location provided. Please change your location and try again.'
+            ],401);
+        }
+        
         $token = Str::random(30);
         $table = $request->role == 'passenger' ? new Passenger() : new Rider();
         $table->fullname = $request->input('fullname');
         $table->email = $request->input('email');
+        $table->role = $request->input('role');
         $table->country_code = $request->input('country_code');
-        $table->contact = $request->input('contact');
+        $table->contact = $request->input('mobile');
         $table->password = Hash::make(12345678);
         $table->address = $request->input('address');   
         $table->city = $request->input('city');
@@ -105,9 +112,10 @@ class ApiController extends Controller
         $table->longitude = $request->input('longitude');
         $table->fcm_token = $request->input('fcm_token');
         
+        
     if($request->role == 'passenger'){
         $table->is_first_booking =  0;
-        $table->verify = 0;
+        
     }
 
         $table->status = 2;
@@ -117,9 +125,9 @@ class ApiController extends Controller
 
             if($table->id){
             
-                if($request->role == 'passenger'){
-                    DB::table('passenger_addresses')->insert([
-                        'passenger_id' => $table->id,
+                //if($request->role == 'passenger'){
+                    DB::table($table2)->insert([
+                        'user_id' => $table->id,
                         'typeset' => 'primary',
                         'address' => $request->input('address'),
                         'city' => $request->input('city'),
@@ -130,8 +138,10 @@ class ApiController extends Controller
                         
                         'status' => 1,
                 ]);
-            }
+            //}
 
+            if($request->role == 'passenger'){
+                
             return response()->json([
                 'user' => $table,
                 'message' => 'Registration successful',
@@ -139,10 +149,27 @@ class ApiController extends Controller
                 'token_type' => 'Bearer'
                 
             ], 201);
+            }else{
+               
+                return response()->json([
+                    'message' => 'Registration successful! Please wait for admin approval.',
+                ], 201);
+            }
         }
     
     
 }
+
+public function apiLogoutuser(Request $request)
+    {
+        
+        $table = $request->role == 'passenger' ? 'passengers' : 'riders';
+        DB::table($table)->where('otp_key', $request->input('access_token'))->update([
+            'otp_key' => null,
+            'fcm_token' => null
+        ]);
+        return response()->json(['message' => 'Logout successful'], 200);
+    }
 
 
 

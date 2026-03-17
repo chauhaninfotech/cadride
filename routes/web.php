@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminCoontroller;
+use App\Http\Controllers\BookingControllter;
 use App\Http\Controllers\PassengerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RiderController;
@@ -43,6 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/passenger-exportlistcsv', [PassengerController::class, 'exportListCSV'])->name('passenger.exportlistcsv');
     Route::post('/bulkActivate', [PassengerController::class, 'bulkActivate'])->name('passenger.bulkActivate');
     Route::get('/passenger-bookings', [PassengerController::class, 'bookings'])->name('passenger.bookings');
+    Route::get('get-passenger-addresses/{user_id}/{address}', [PassengerController::class, 'passengerAddress'])->name('passenger.address');
 
     Route::get('/rider-add', [RiderController::class, 'riderAdd'])->name('rider-add');
     Route::post('/rider-store', [RiderController::class, 'store'])->name('rider.store');
@@ -57,7 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/rider-view', [RiderController::class, 'updateRiderView'])->name('rider.updateView');
     Route::get('/rider-exportlistcsv', [RiderController::class, 'exportListCSV'])->name('rider.exportlistcsv');
     Route::post('/rider-bulkActivate', [RiderController::class, 'bulkActivate'])->name('rider.bulkActivate');
-    Route::get('/get-address-details/{addressId}', [RiderController::class, 'getAddressDetails'])->name('rider.getAddressDetails');
+    Route::get('/get-address-details/{tb}/{addressId}', [RiderController::class, 'getAddressDetails'])->name('rider.getAddressDetails');
 
  
 
@@ -103,7 +105,29 @@ Route::middleware('auth')->group(function () {
     Route::get('/shift-edit', [AdminCoontroller::class, 'editShift'])->name('shift.edit');
     Route::post('/shift-edit', [AdminCoontroller::class, 'postEditShift'])->name('shift.update');
 
+    Route::get('/carousel', [AdminCoontroller::class, 'carouselList'])->name('carousel.list');
+    Route::get('/carousel-edit', [AdminCoontroller::class, 'editCarousel'])->name('carousel.edit');
+    Route::post('/carousel-edit', [AdminCoontroller::class, 'postEditCarousel'])->name('carousel.update');
+    Route::post('/carousel-delete', [AdminCoontroller::class, 'deleteCarousel'])->name('carousel.delete');
+    Route::post('/carousel-add', [AdminCoontroller::class, 'postCarousel'])->name('carousel.add');
+    Route::get('/carousel-add', [AdminCoontroller::class, 'carouselAdd'])->name('carousel.add');
 
+
+    Route::get('/booking-list', [BookingControllter::class, 'bookingList'])->name('booking.list');
+    Route::get('/passenger-booking', [BookingControllter::class, 'booking'])->name('passenger.booking');
+    Route::post('/booking-store', [BookingControllter::class, 'bookingPost'])->name('booking.store');
+
+    Route::get('/booking.edit', [BookingControllter::class, 'bookingEdit'])->name('booking.edit');
+    Route::post('/booking.edit', [BookingControllter::class, 'bookingUpdate'])->name('booking.edit');
+    
+
+    Route::post('/booking-single-store', [BookingControllter::class, 'singleStore'])->name('booking.singlestore');
+    Route::get('/shift-time', [BookingControllter::class, 'shiftTime'])->name('shift.time');
+    Route::get('/booking-export', [BookingControllter::class, 'bookingExport'])->name('booking.export');
+    Route::get('/booking-delete', [BookingControllter::class, 'bookingDelete'])->name('booking.delete');
+    Route::POST('/time-cut', [BookingControllter::class, 'bookingTimecut'])->name('booking.timecut');
+    
+    
     
     
 });

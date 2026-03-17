@@ -1,0 +1,512 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use App\Models\Passenger;
+use App\Models\Booking;
+use App\Helpers\Helpers;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class BookingControllter extends Controller
+{
+    
+    public function bookingList()
+    {
+    
+        $query = Booking::query();
+        if (request('id')) {
+            $query->where('user_id', request('id'));
+        }
+        if (request('name')) {
+            $query->where('name', 'like', '%' . request('name') . '%');
+        }
+        if (request('booked_date')) {
+            $ex = explode('-',request('booked_date'));
+            $booked_date = $ex[2].'-'.$ex[1].'-'.$ex[0];
+            $query->where('booked_date', $booked_date);
+        }
+        if(request('status')) {
+            $query->where('status', 'like', '%' . request('status') . '%');
+        }
+        
+            $query->orderBy('id', 'desc');
+        $perpage = request('perpage', Config::get('pagination.per_page', 10));
+
+        $bookings = $query->latest()->paginate($perpage);
+        return view('booking.booking-list', compact('bookings'));
+       
+    }
+
+    public function booking()
+    {
+        $id = request()->query('id');
+        $passengerData = Passenger::where('id', $id)->first();
+        $pick_addresses = DB::table('passenger_addresses')->where('user_id', $passengerData->id)->where('address_type','PICK')->get();
+        $drop_addresses = DB::table('passenger_addresses')->where('user_id', $passengerData->id)->where('address_type','DROP')->get();
+        return view('booking.passenger-booking', compact('passengerData', 'pick_addresses', 'drop_addresses'));
+    }
+
+    public function shiftTime(Request $request)
+    {
+        $shift_name = $request->query('shift_name');
+        $booking_dates = $request->query('booking_dates');
+        $route_name = $request->query('city_name');
+        $shift_status = strtolower($shift_name);
+        $triger = 0;
+        $current_userid = 1;
+        $cut_date = '';
+//return $booking_dates;
+        foreach($booking_dates as $booked_date){
+          $timecutCount = DB::table('booking_timecut')->where('datecut',$booked_date)->where($shift_status.'_status',1)->count();
+         if($timecutCount == 1){
+             $triger = 1;
+             $cut_date = $booked_date;
+         }
+         }
+
+         if($triger == 0){
+            $shiftCount = DB::table('shifts')->where('shift_name',$shift_name)->where('route_name',$route_name)->orderBy('time_order', 'ASC')->count();
+             
+            if ($shiftCount > 0) {
+                $shift = DB::table('shifts')->where('shift_name',$shift_name)->where('route_name',$route_name)->orderBy('time_order', 'ASC')->get();
+                $status = 200;
+            }else{
+                $status = 400;
+                $shift = array();
+            }
+        
+         }else{
+             $status = 300;
+             $shift = $cut_date.'_'.$shift_status;
+             
+             
+             if($current_userid == 1){
+                 $shiftCount = DB::table('shifts')->where('shift_name',$shift_name)->where('route_name',$route_name)->orderBy('time_order', 'ASC')->count();
+             
+                if ($shiftCount > 0) {
+                    $shift = DB::table('shifts')->where('shift_name',$shift_name)->where('route_name',$route_name)->orderBy('time_order', 'ASC')->get();
+                    $status = 200;
+                }else{
+                    $status = 400;
+                    $shift = array();
+                }
+             }
+         }
+
+
+       
+
+        return response()->json([
+            'status' => $status,
+            'data' => $shift,
+        ]);
+
+    }
+    public function bookingPost(Request $request){
+
+    $subpoint = Helpers::getSubpointName($request->postal_code);
+    if (!$subpoint) {
+        $subpoint = 'Empty';
+    }
+    
+    $dropsubpoint = Helpers::getSubpointName($request->droppostal_code);
+    if (!$dropsubpoint) {
+        $dropsubpoint = 'Empty';
+    }
+
+    if(!empty($request->selectgoingaddress)){
+
+        $pickaddress = $request->selectgoingaddress;
+    }else{
+        $pickaddress = $request->goingpickupaddress;
+        
+            DB::table('passenger_addresses')->insert([
+                'user_id' => $request->passenger_id,
+                'address_type' => 'PICK',
+                'typeset' => 'secondary',
+                'address' => $pickaddress,
+                'city' => $request->city,
+                'postal_code' => $request->postal_code,
+                'subpoint' => $subpoint,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'status' => 1,
+            ]);
+
+    }
+
+    if(!empty($request->selectaddress)){
+        
+        $dropaddress = $request->selectaddress;
+    }else{
+        $dropaddress = $request->goingdropupaddress;
+
+        DB::table('passenger_addresses')->insert([
+            'user_id' => $request->passenger_id,
+            'address_type' => 'DROP',
+            'typeset' => 'secondary',
+            'address' => $dropaddress,
+            'city' => $request->dropcity,
+            'postal_code' => $request->droppostal_code,
+            'subpoint' => $dropsubpoint,
+            'latitude' => $request->droplatitude,
+            'longitude' => $request->droplongitude,
+            'status' => 1,
+        ]);
+    }
+
+    
+
+        $booking = new Booking();
+        $booking->user_id = $request->passenger_id;
+        $booking->name = $request->name;
+        $booking->mobile = $request->contact;
+        $booking->email = $request->email;
+        $booking->booked_date = $request->booking_date;
+        $booking->shift = $request->booking_shift;
+        $booking->booked_time = $request->booking_time;
+        $ex = explode(' ',$request->booking_time);
+        $booking->time_order = str_replace(':','',$ex[0]);
+
+        $booking->pickup_location = $pickaddress;
+        $booking->pickup_subpoint = $subpoint;
+        $booking->pickup_city = $request->city;
+        
+        $booking->pickup_postal_code = $request->postal_code;
+        $booking->pickup_lat = $request->latitude;
+        $booking->pickup_long = $request->longitude;
+
+        $booking->dropup_location = $dropaddress;
+        $booking->dropup_subpoint = $dropsubpoint;
+        $booking->dropup_city = $request->dropcity;
+        $booking->dropup_postal_code = $request->droppostal_code;
+        $booking->dropup_lat = $request->droplatitude;
+        $booking->dropup_long = $request->droplongitude;
+        $booking->status = 1;
+
+        $booking->save();
+
+
+        // Drop off Booking
+
+        $subpoint = Helpers::getSubpointName($request->return_pickuppostal_code);
+    if (!$subpoint) {
+        $subpoint = 'Empty';
+    }
+    
+    $dropsubpoint = Helpers::getSubpointName($request->return_droppostal_code);
+    if (!$dropsubpoint) {
+        $dropsubpoint = 'Empty';
+    }
+
+    if(!empty($request->returnpickupselectaddress)){
+
+        $pickaddress = $request->returnpickupselectaddress;
+    }else{
+        $pickaddress = $request->returnpickupaddress;
+        
+            DB::table('passenger_addresses')->insert([
+                'user_id' => $request->passenger_id,
+                'address_type' => 'DROP',
+                'typeset' => 'secondary',
+                'address' => $pickaddress,
+                'city' => $request->return_pickupcity,
+                'postal_code' => $request->return_pickuppostal_code,
+                'subpoint' => $subpoint,
+                'latitude' => $request->return_pickuplatitude,
+                'longitude' => $request->return_pickuplongitude,
+                'status' => 1,
+            ]);
+
+    }
+
+    if(!empty($request->returndropselectaddress)){
+        
+        $dropaddress = $request->returndropselectaddress;
+    }else{
+        $dropaddress = $request->return_dropaddress;
+
+        DB::table('passenger_addresses')->insert([
+            'user_id' => $request->passenger_id,
+            'address_type' => 'PICK',
+            'typeset' => 'secondary',
+            'address' => $dropaddress,
+            'city' => $request->dropcity,
+            'postal_code' => $request->droppostal_code,
+            'subpoint' => $dropsubpoint,
+            'latitude' => $request->droplatitude,
+            'longitude' => $request->droplongitude,
+            'status' => 1,
+        ]);
+    }
+
+    
+
+        $booking = new Booking();
+        $booking->user_id = $request->passenger_id;
+        $booking->name = $request->name;
+        $booking->mobile = $request->contact;
+        $booking->email = $request->email;
+        $booking->booked_date = $request->return_booking_date;
+        $booking->shift = $request->return_booking_shift;
+        $booking->booked_time = $request->return_booking_time;
+        $ex = explode(' ',$request->return_booking_time);
+        $booking->time_order = str_replace(':','',$ex[0]);
+
+        $booking->pickup_location = $dropaddress;
+        $booking->pickup_subpoint = $subpoint;
+        $booking->pickup_city = $request->city;
+        
+        $booking->pickup_postal_code = $request->postal_code;
+        $booking->pickup_lat = $request->latitude;
+        $booking->pickup_long = $request->longitude;
+
+        $booking->dropup_location = $dropaddress;
+        $booking->dropup_subpoint = $dropsubpoint;
+        $booking->dropup_city = $request->dropcity;
+        $booking->dropup_postal_code = $request->droppostal_code;
+        $booking->dropup_lat = $request->droplatitude;
+        $booking->dropup_long = $request->droplongitude;
+        $booking->status = 1;
+
+        $booking->save();
+
+        $passenger = Passenger::findOrFail($request->passenger_id);
+
+        return redirect()->route('booking.list')->with('message', 'Your Booking Successfully Submitted.');
+      
+
+    }
+    public function singleStore(Request $request){
+     
+
+    $subpoint = Helpers::getSubpointName($request->single_pickuppostal_code);
+    if (!$subpoint) {
+        $subpoint = 'Empty';
+    }
+    
+    $dropsubpoint = Helpers::getSubpointName($request->droppostal_code);
+    if (!$dropsubpoint) {
+        $dropsubpoint = 'Empty';
+    }
+
+    if(!empty($request->selectgoingaddress)){
+
+        $pickaddress = $request->selectgoingaddress;
+    }else{
+        $pickaddress = $request->goingpickupaddress;
+        
+            DB::table('passenger_addresses')->insert([
+                'user_id' => $request->passenger_id,
+                'address_type' => 'PICK',
+                'typeset' => 'secondary',
+                'address' => $pickaddress,
+                'city' => $request->single_pickupcity,
+                'postal_code' => $request->single_pickuppostal_code,
+                'subpoint' => $subpoint,
+                'latitude' => $request->single_pickuplatitude,
+                'longitude' => $request->single_pickuplongitude,
+                'status' => 1,
+            ]);
+
+    }
+
+    if(!empty($request->selectaddress)){
+        
+        $dropaddress = $request->selectaddress;
+    }else{
+        $dropaddress = $request->single_dropupaddress;
+
+        DB::table('passenger_addresses')->insert([
+            'user_id' => $request->passenger_id,
+            'address_type' => 'DROP',
+            'typeset' => 'secondary',
+            'address' => $dropaddress,
+            'city' => $request->dropcity,
+            'postal_code' => $request->droppostal_code,
+            'subpoint' => $dropsubpoint,
+            'latitude' => $request->droplatitude,
+            'longitude' => $request->droplongitude,
+            'status' => 1,
+        ]);
+    }
+
+    
+
+        $booking = new Booking();
+        $booking->user_id = $request->passenger_id;
+        $booking->name = $request->name;
+        $booking->mobile = $request->contact;
+        $booking->email = $request->email;
+        $booking->booked_date = $request->booking_date;
+        $booking->shift = $request->booking_shift;
+        $booking->booked_time = $request->booking_time;
+        $ex = explode(' ',$request->booking_time);
+        $booking->time_order = str_replace(':','',$ex[0]);
+
+        $booking->pickup_location = $pickaddress;
+        $booking->pickup_subpoint = $subpoint;
+        $booking->pickup_city = $request->single_pickupcity;
+        
+        $booking->pickup_postal_code = $request->single_pickuppostal_code;
+        $booking->pickup_lat = $request->single_pickuplatitude;
+        $booking->pickup_long = $request->single_pickuplongitude;
+
+        $booking->dropup_location = $dropaddress;
+        $booking->dropup_subpoint = $dropsubpoint;
+        $booking->dropup_city = $request->dropcity;
+        $booking->dropup_postal_code = $request->droppostal_code;
+        $booking->dropup_lat = $request->droplatitude;
+        $booking->dropup_long = $request->droplongitude;
+        $booking->status = 1;
+
+        $booking->save();
+    
+        return redirect()->route('booking.list')->with('message', 'Your Booking Successfully Submitted.');
+
+    }
+
+    public function bookingEdit(Request $request){
+        $id = $request->query('id');
+        $bookingData = Booking::where('id', $id)->first();
+        $pick_addresses = DB::table('passenger_addresses')->where('user_id', $bookingData->user_id)->where('address_type','PICK')->get();
+        $drop_addresses = DB::table('passenger_addresses')->where('user_id', $bookingData->user_id)->where('address_type','DROP')->get();
+        return view('booking.booking-edit', compact('bookingData','pick_addresses','drop_addresses'));
+    }
+
+    public function bookingUpdate(Request $request){
+
+        $id = $request->query('id');
+        $booking = Booking::findOrFail($id);
+        
+        $subpoint = Helpers::getSubpointName($request->single_pickuppostal_code);
+    if (!$subpoint) {
+        $subpoint = 'Empty';
+    }
+    
+    $dropsubpoint = Helpers::getSubpointName($request->droppostal_code);
+    if (!$dropsubpoint) {
+        $dropsubpoint = 'Empty';
+    }
+
+    if(!empty($request->selectgoingaddress)){
+
+        $pickaddress = $request->selectgoingaddress;
+    }else{
+        $pickaddress = $request->goingpickupaddress;
+        
+            DB::table('passenger_addresses')->insert([
+                'user_id' => $request->passenger_id,
+                'address_type' => 'PICK',
+                'typeset' => 'secondary',
+                'address' => $pickaddress,
+                'city' => $request->single_pickupcity,
+                'postal_code' => $request->single_pickuppostal_code,
+                'subpoint' => $subpoint,
+                'latitude' => $request->single_pickuplatitude,
+                'longitude' => $request->single_pickuplongitude,
+                'status' => 1,
+            ]);
+
+    }
+
+    if(!empty($request->selectaddress)){
+        
+        $dropaddress = $request->selectaddress;
+    }else{
+        $dropaddress = $request->single_dropupaddress;
+
+        DB::table('passenger_addresses')->insert([
+            'user_id' => $request->passenger_id,
+            'address_type' => 'DROP',
+            'typeset' => 'secondary',
+            'address' => $dropaddress,
+            'city' => $request->dropcity,
+            'postal_code' => $request->droppostal_code,
+            'subpoint' => $dropsubpoint,
+            'latitude' => $request->droplatitude,
+            'longitude' => $request->droplongitude,
+            'status' => 1,
+        ]);
+    }
+
+    
+        $booking->user_id = $request->passenger_id;
+        $booking->name = $request->name;
+        $booking->mobile = $request->contact;
+        $booking->email = $request->email;
+        $booking->booked_date = $request->booking_date;
+        $booking->shift = $request->booking_shift;
+        $booking->booked_time = $request->booking_time;
+        $ex = explode(' ',$request->booking_time);
+        $booking->time_order = str_replace(':','',$ex[0]);
+
+        $booking->pickup_location = $pickaddress;
+        $booking->pickup_subpoint = $subpoint;
+        $booking->pickup_city = $request->single_pickupcity;
+        
+        $booking->pickup_postal_code = $request->single_pickuppostal_code;
+        $booking->pickup_lat = $request->single_pickuplatitude;
+        $booking->pickup_long = $request->single_pickuplongitude;
+
+        $booking->dropup_location = $dropaddress;
+        $booking->dropup_subpoint = $dropsubpoint;
+        $booking->dropup_city = $request->dropcity;
+        $booking->dropup_postal_code = $request->droppostal_code;
+        $booking->dropup_lat = $request->droplatitude;
+        $booking->dropup_long = $request->droplongitude;
+
+        $booking->save();
+
+        return redirect()->back()->with('message', 'Booking Successfully Updated.');
+
+    }
+    public function bookingDelete(Request $request){
+
+        $id = $request->query('booking_id');
+
+        Booking::where('id', $id)->update(['status' => 0]);
+        return 200;
+
+    }
+
+    public function bookingExport()
+    {
+        $query = Booking::query();
+        if (request('id')) {
+            $query->where('user_id', request('id'));
+        }
+        if (request('name')) {
+            $query->where('name', 'like', '%' . request('name') . '%');
+        }
+        if (request('booked_date')) {
+            $ex = explode('-',request('booked_date'));
+            $booked_date = $ex[2].'-'.$ex[1].'-'.$ex[0];
+            $query->where('booked_date', $booked_date);
+        }
+        if(request('status')) {
+            $query->where('status', 'like', '%' . request('status') . '%');
+        }
+        
+            $query->orderBy('id', 'desc');
+        $perpage = request('perpage', Config::get('pagination.per_page', 10));
+        $bookings = $query->latest()->paginate($perpage);
+        $timecut = DB::table('booking_timecut')->where('id', 1)->first();
+        return view('booking.booking-export', compact('bookings', 'timecut'));
+       
+    }
+
+    public function bookingTimecut(Request $request){
+
+        $bookingg['datecut'] = $request->cut_date;
+        $bookingg['morning_status'] = $request->morning_status;
+        $bookingg['afternoon_status'] = $request->afternoon_status;
+        $bookingg['evening_status'] = $request->evening_status;
+        $bookingg['night_status'] = $request->night_status;
+        DB::table('booking_timecut')->where('id', 1)->update($bookingg);
+        return 200;
+    }
+}

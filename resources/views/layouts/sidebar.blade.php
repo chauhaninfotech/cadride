@@ -17,36 +17,6 @@
               </a>
             </li>
             
-            
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#rider" aria-expanded="false" aria-controls="rider">
-                <i class="fa fa-car"></i>
-                <span class="menu-title">Riders</span>
-                <i class="menu-arrow"></i>
-                
-              </a>
-              <div class="collapse" id="rider">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url('rider-list') }}">List</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url('rider-inactivelist') }}">Inactive List</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url('rider-pendinglist') }}">Pending List</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url('rider-exportlist') }}">Export</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url('rider-add') }}">Add</a>
-                  </li>
-                  
-                </ul>
-              </div>
-            </li>
-           
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#passenger" aria-expanded="false" aria-controls="passenger">
                 <i class="fa fa-user"></i>
@@ -76,6 +46,63 @@
               </div>
             </li>
             
+            
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#rider" aria-expanded="false" aria-controls="rider">
+                <i class="fa fa-car"></i>
+                <span class="menu-title">Riders</span>
+                <i class="menu-arrow"></i>
+                
+              </a>
+              <div class="collapse" id="rider">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('rider-list') }}">Active List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('rider-inactivelist') }}">Inactive List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('rider-pendinglist') }}">Pending List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('rider-exportlist') }}">Availability</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('rider-add') }}">Add</a>
+                  </li>
+                  
+                </ul>
+              </div>
+            </li>
+           <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#booking" aria-expanded="false" aria-controls="booking">
+                <i class="fa fa-book"></i>
+                <span class="menu-title">Bookings</span>
+                <i class="menu-arrow"></i>
+                
+              </a>
+              <div class="collapse" id="booking">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('booking-list') }}">Booking List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('booking-assign') }}">Booking Assign</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('booking-export') }}">Booking Export</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('booking-remove') }}">Booking Remove</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{ url('booking-report') }}">Booking Report</a>
+                  </li>
+                  
+                </ul>
+              </div>
+            </li>
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#pickup" aria-expanded="false" aria-controls="pickup">
                 <i class="fa fa-map-marker"></i>
@@ -146,6 +173,13 @@
                   
                 </ul>
               </div>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url('carousel') }}">
+                <i class="fa fa-image"></i>
+                <span class="menu-title">Carousel</span>
+                
+              </a>
             </li>
             
           </ul>
