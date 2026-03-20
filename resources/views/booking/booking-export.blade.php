@@ -72,7 +72,7 @@
                         <div class="col-md-2" >
   
                           <div class="input-group">
-                            <input type="submit" style="margin-top:21px; width:100%;" name="submit" value="Submit" class="btn btn-success" />
+                            <input type="submit" style="margin-top:21px; width:100%;" name="submit" value="Submit" class="btn btn-danger" />
                             
                           </div>
                         </div>
@@ -88,32 +88,63 @@
                 <div class="card-body">
                
     
-                <form method="GET" action="{{ url('booking-list') }}" class="mb-3">
+                <form method="GET" action="{{ url('booking-export') }}" class="mb-3">
                         @csrf
                       <div class="row">
-                        <div class="col-md-3" >
-                          <div class="input-group">
-                            <input type="number" name="id" class="form-control" placeholder="Passenger ID..." value="{{ request('id') }}">
-                          </div>
+                       <div class="col-md-12">
+                        <div class="row" style="padding: 20px 0px;">
+                            <div class="col-md-4 col-sm-12">
+                                <label class="mb-2">Booking Date</label>
+                              
+
+                                <input type="date"  name="startdate"  required class="form-control" value="<?php echo request('startdate'); ?>">
+                            </div>
+                   
+                            <div class="col-md-4 col-sm-12">
+                            <label class="mb-2">Booking Shift</label>
+                                <select name="bookingshift" rel="pickup" class="shifttimeall form-control form-select">
+                                    <option value="" class="form-control">-Booking Shift-</option>
+                                    <option {{ request('bookingshift') == 'Morning' ? 'selected' : '' }} value="Morning"> Morning</option>
+                                    <option {{ request('bookingshift') == 'Afternoon' ? 'selected' : '' }} value="Afternoon"> Afternoon</option>
+                                    <option {{ request('bookingshift') == 'Evening' ? 'selected' : '' }} value="Evening"> Evening</option>
+                                    <option {{ request('bookingshift') == 'Night' ? 'selected' : '' }} value="Night"> Night</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 col-sm-12">
+                            <label class="mb-2">Booking Time</label>
+                                <select name="bookingshifttime" class="pickuptiming form-control form-select">
+                                <option value="" class="form-control">-Booking Time-</option>
+                                <option value="" selected="selected" class="form-control"></option>
+                                </select>
+                            </div>
+                          
                         </div>
-                        <div class="col-md-3">
-                          <div class="input-group">
-                            <input type="text" name="name" class="form-control" placeholder="Passenger Name..." value="{{ request('name') }}">
-                          </div>
-                       </div>
-                       <div class="col-md-3" >
-                          <div class="input-group">
-                            <input type="date" name="booked_date" class="form-control" placeholder="Booking Date..." value="{{ request('booked_date') }}">
-                          </div>
+                        <div class="row" style="padding: 20px 0px;">
+                            <div class="col-md-5 col-sm-12">
+                            <label class="mb-2">Pickup City</label>
+                                <div class="dropdown  show-tick going_city form-control form-select"><select name="going_city[]" multiple="" class="multiselect going_city form-control form-select" tabindex="-98">
+                                @foreach($cities as $city)
+                                    <option {{ in_array($city->name, request('going_city', [])) ? 'selected' : '' }} value="{{ $city->name }}">{{ $city->name }}</option>
+                                @endforeach
+                                </select>
+                            </div></div>
+							            <div class="col-md-5 col-sm-12">
+                            <label class="mb-2">Dropup City</label>
+                                <div class="dropdown  show-tick return_city form-control form-select"><select name="return_city[]" multiple="" class="multiselect return_city form-control form-select" tabindex="-98">
+                                @foreach($cities as $city)
+                                    <option {{ in_array($city->name, request('return_city', [])) ? 'selected' : '' }} value="{{ $city->name }}">{{ $city->name }}</option>
+                                @endforeach
+									
+                                </select>
+
+                            </div></div>
+                            <div class="col-md-2 col-sm-12">
+                                <button type="submit" name="expotfiltersubmit" style="width: 100%; margin-top:32px" class="btn btn-primary">Search</button>
+                            </div>
+                        </div>
                         </div>
                         
-                        <div class="col-md-3" style="padding: 0px;">
-                          <div class="input-group" style="float:left; width: 70px;">
-                            <input type="number" style="padding:14px 8px;" name="perpage" class="form-control" placeholder="Per Page..." value="{{ request('perpage', Config::get('pagination.per_page')) }}">
-                          </div>
-                          <button type="submit" class="btn btn-primary">Search</button>
-                          <a href="{{ url('rider-list') }}" style="padding: 14px 20px;" class="btn btn-secondary">Reset</a>
-                        </div>
+                        
                       </div> 
                     </form>
                 </div>
@@ -125,7 +156,9 @@
             
                 <div class="card">
                   <div class="card-body">
-                    
+                    <div class="text-end mb-1">
+                    <a href="{{ route('booking.exportlistcsv', request()->query()) }}" style="padding: 14px 20px;" class="btn btn-success mb-3">Export</a>
+                    </div>
                     <div class="table-responsive">
                       <table class="table table-striped table-bordered">
                         <thead>
@@ -148,10 +181,10 @@
                                 </tr>
                         </thead>
                         <tbody>
-                        <?php $cnt = ($bookings->currentPage() - 1) * $bookings->perPage(); ?>
+                        
                           @forelse($bookings as $key => $booking)
                             <tr>
-                                <td class="sno">{{ $cnt++}}</td>
+                                <td class="sno">{{ $key + 1 }}</td>
                                 <td class="name">{{ $booking->name }} - {{ $booking->user_id }} <b><sub>( {{ $booking->pickup_subpoint }} )</sub> <sub>( {{ $booking->dropup_subpoint }} )</sub></b><sub>( {{ $booking->booked_time }} )</sub></td>
                                 
                               </td>
@@ -195,7 +228,7 @@
                         </tbody>
                       </table>
                     </div>
-                    {{ $bookings->links() }}
+                    
                   </div>
                 </div>
               </div>  
@@ -204,9 +237,48 @@
 @yield('script')
 <!-- jQuery FIRST -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 <script>
 
 $('document').ready(function(){
+
+    $('.multiselect').select2({
+        placeholder: "Select Cities",
+        width: '100%'
+    });
+
+    $('.shifttimeall').change(function(){ 
+    let shift = $(this).val();
+    let rel = $(this).attr('rel');
+
+    $.ajax({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        url : "shifttimeall/"+shift,
+        type : 'GET',
+        success : function(result){
+            
+            if(result.status == 200){
+                let option = '<option value="">-Select Shift Time-</option>';
+                let timing = '';
+                
+                $.each(result.data, function(key, val) {  
+                        timing = val;
+                       option += '<option value="'+timing+'">'+timing+'</option>';
+                });  
+                $('.'+rel+'timing').html(option);
+        
+            }
+            
+            
+        }
+    });
+  });
+
     $('#timeCutForm').on('submit', function(e) {
 
     e.preventDefault(); // stop normal submit
@@ -309,6 +381,9 @@ $('.confirmDelete').on('click', function(e) {
     min-height: auto;
     margin: 0px;
     margin-left: 20px;
+}
+.select2-container--default .select2-selection--multiple {
+    border: none !important;
 }
 .table td {
     word-wrap: break-word;

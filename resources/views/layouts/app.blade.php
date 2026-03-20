@@ -8,8 +8,9 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
         <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="assets/vendors/mdi/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="assets/vendors/ti-icons/css/themify-icons.css">
     <link rel="stylesheet" href="assets/vendors/css/vendor.bundle.base.css">
@@ -25,6 +26,17 @@
 .fa {
     color: #F69EAF;
 }
+
+body, .table thead th, .sidebar, .sidebar .nav .nav-item.active > .nav-link .menu-title, h1, .h1, h2, h3, h4, h5, h6, .h2, .h3, .h4, .h5, .h6 ,
+.form-control, .typeahead, .tt-query, .tt-hint, .select2-container--default .select2-selection--single .select2-search__field, .select2-container--default .select2-selection--single, .form-select{
+  font-family: "Libre Baskerville", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+.form-control, .typeahead, .tt-query, .tt-hint, .select2-container--default .select2-selection--single .select2-search__field, .select2-container--default .select2-selection--single, .form-select{
+    font-size: 18px;
+}
 .content-wrapper {
     background: #FFFAFB;
     padding: 10px;
@@ -38,6 +50,10 @@ table {
 .sidebar {
     background: #FFE9F0;
         width: 165px;
+}
+select {
+    height: 54px;
+    border-radius: 2px !important;
 }
 .navbar .navbar-brand-wrapper .navbar-brand img {
     height: 70px;
@@ -92,7 +108,9 @@ button.btn.btn-primary, button.btn.btn-primary:hover {
 .select2-container--default .select2-selection--multiple .select2-selection__choice{
     padding: 10px 5px !important;
 }
-
+select.form-select {
+    color: #000;
+}
 @keyframes fadeUp {
     from {
         opacity: 0;

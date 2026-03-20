@@ -124,8 +124,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/booking-single-store', [BookingControllter::class, 'singleStore'])->name('booking.singlestore');
     Route::get('/shift-time', [BookingControllter::class, 'shiftTime'])->name('shift.time');
     Route::get('/booking-export', [BookingControllter::class, 'bookingExport'])->name('booking.export');
+    Route::get('/booking-exportlistcsv', [BookingControllter::class, 'exportListCSV'])->name('booking.exportlistcsv');
+    Route::post('/bulkActivate', [PassengerController::class, 'bulkActivate'])->name('passenger.bulkActivate');
     Route::get('/booking-delete', [BookingControllter::class, 'bookingDelete'])->name('booking.delete');
     Route::POST('/time-cut', [BookingControllter::class, 'bookingTimecut'])->name('booking.timecut');
+    Route::get('/shifttimeall/{shift}', [BookingControllter::class, 'shiftTimeAll'])->name('shift.timeall');
     
     
     

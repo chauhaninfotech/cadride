@@ -68,7 +68,15 @@
                                 </tr>
                         </thead>
                         <tbody>
-                        <?php $cnt = ($bookings->currentPage() - 1) * $bookings->perPage(); ?>
+                        <?php 
+                          
+                          if($bookings->currentPage() == 1){
+                            $cnt = 1;
+                          }else{
+                            $cnt = ($bookings->currentPage() - 1) * $bookings->perPage() + 1;
+                          }
+                          
+                        ?>
                           @forelse($bookings as $key => $booking)
                             <tr>
                                 <td class="sno">{{ $cnt++}}</td>
@@ -89,7 +97,7 @@
                                 <td class="status">
                                     @if($booking->status == 1)
                                         <span class="badge bg-success">Processing</span>
-                                    @elseif($booking->booking == 0)
+                                    @elseif($booking->status == 0)
                                         <span class="badge bg-danger">Cancelled</span>
                                     @elseif($booking->status == 2)
                                         <span class="badge bg-warning">Booked</span>
@@ -98,11 +106,11 @@
                                 
                                 <td>
                                     @if($booking->status != 0)
-                                    <a href="{{ route('rider.edit', ['id' => $booking->id]) }}"><i class="fa fa-edit"></i> </a>
+                                    <a title="Edit Booking" href="{{ route('booking.edit', ['id' => $booking->id]) }}"><i style="font-size: 26px;" class="fa fa-edit"></i> </a>
                                     @endif
-                                    <br><a href="{{ route('rider.show', ['id' => $booking->id]) }}" ><i class="fa fa-eye"></i> </a>
+                                    <br><a title="View Booking" href="{{ route('rider.show', ['id' => $booking->id]) }}" ><i style="font-size: 26px;" class="fa fa-eye"></i> </a>
                                     @if($booking->status != 0)
-                                    <br><a href="javascript:void(0);" class="confirmDelete" rel="{{ $booking->id }}"><i class="fa fa-trash"></i> </a>
+                                    <br><a title="Cancel Booking" href="javascript:void(0);" class="confirmDelete" rel="{{ $booking->id }}"><i style="font-size: 26px;" class="fa fa-ban"></i> </a>
                                      @endif
                                 </td>
                                
@@ -128,7 +136,7 @@
 $('document').ready(function(){ 
     
 $('.confirmDelete').on('click', function(e) {
-
+    let id = $(this).attr('rel'); // get booking id from the 'rel' attribute
     Swal.fire({
         title: 'Are you sure?',
         text: "This booking will be cancelled!",
@@ -136,7 +144,7 @@ $('.confirmDelete').on('click', function(e) {
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: 'Yes, cancel it!'
     }).then((result) => {
 
         if (result.isConfirmed) {

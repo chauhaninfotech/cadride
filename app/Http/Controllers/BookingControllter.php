@@ -473,31 +473,7 @@ class BookingControllter extends Controller
 
     }
 
-    public function bookingExport()
-    {
-        $query = Booking::query();
-        if (request('id')) {
-            $query->where('user_id', request('id'));
-        }
-        if (request('name')) {
-            $query->where('name', 'like', '%' . request('name') . '%');
-        }
-        if (request('booked_date')) {
-            $ex = explode('-',request('booked_date'));
-            $booked_date = $ex[2].'-'.$ex[1].'-'.$ex[0];
-            $query->where('booked_date', $booked_date);
-        }
-        if(request('status')) {
-            $query->where('status', 'like', '%' . request('status') . '%');
-        }
-        
-            $query->orderBy('id', 'desc');
-        $perpage = request('perpage', Config::get('pagination.per_page', 10));
-        $bookings = $query->latest()->paginate($perpage);
-        $timecut = DB::table('booking_timecut')->where('id', 1)->first();
-        return view('booking.booking-export', compact('bookings', 'timecut'));
-       
-    }
+   
 
     public function bookingTimecut(Request $request){
 
@@ -508,5 +484,132 @@ class BookingControllter extends Controller
         $bookingg['night_status'] = $request->night_status;
         DB::table('booking_timecut')->where('id', 1)->update($bookingg);
         return 200;
+    }
+
+    public function shiftTimeAll($shift_name){
+        $data = array();
+      
+         $shiftCount = DB::table('shifts')->where('shift_name',$shift_name)->where('status',1)->orderBy('time_order', 'ASC')->count();
+         if($shiftCount > 0){
+         $shifts = DB::table('shifts')->where('shift_name',$shift_name)->where('status',1)->orderBy('time_order', 'ASC')->get();
+         foreach($shifts as $shift){
+             $row = $shift->timing.' '.$shift->time_format;
+             if(!in_array($row, $data)){
+                 $data[] = $row;
+             }
+         }
+         $status = 200;
+         }else{
+             $status = 400;
+         }
+
+        return response()->json([
+            'data' => $data,
+            'status' => $status
+         ]);
+    }
+
+     
+
+    public function bookingExport(Request $request){
+
+        $startdate = $request->startdate;
+        $dropupshift = $request->bookingshift;
+        $dropupshifttime = $request->bookingshifttime;
+        $bookingsuppoint = $request->suppoint;
+        $pickup_city = ($request->going_city) ? $request->going_city : array();
+        $dropup_city = ($request->return_city) ? $request->return_city : array();
+
+        $query = Booking::query();
+        $query->where('status',1);
+        if($startdate){
+            $ex = explode('-',$startdate);
+            $booked_date = $ex[2].'-'.$ex[1].'-'.$ex[0];
+            $query->where('booked_date', $booked_date);
+        }
+        if($dropupshift){
+            $query->where('shift', $dropupshift);
+        }
+        if($dropupshifttime){
+            $query->where('shift_time', $dropupshifttime);
+        }
+        if(!empty($pickup_city) && !empty($dropup_city)){
+            $query->whereIn('pickup_city', $pickup_city)->whereIn('dropup_city', $dropup_city);
+        }
+        if(!empty($pickup_city)){
+            $query->whereIn('pickup_city', $pickup_city);
+        }
+        if(!empty($dropup_city)){
+            $query->whereIn('dropup_city', $dropup_city);
+        }
+
+        $query->orderBy('id', 'desc');
+        
+        $bookings = $query->get();
+        $timecut = DB::table('booking_timecut')->where('id', 1)->first();
+        $cities = DB::table('cities')->where('status', 1)->get();
+        return view('booking.booking-export', compact('bookings', 'timecut', 'cities'));
+    }
+
+    public function exportListCSV(Request $request){
+        $startdate = $request->startdate;
+        $dropupshift = $request->bookingshift;
+        $dropupshifttime = $request->bookingshifttime;
+        $bookingsuppoint = $request->suppoint;
+        $pickup_city = ($request->going_city) ? $request->going_city : array();
+        $dropup_city = ($request->return_city) ? $request->return_city : array();
+
+        $query = Booking::query();
+        $query->where('status',1);
+        if($startdate){
+            $ex = explode('-',$startdate);
+            $booked_date = $ex[2].'-'.$ex[1].'-'.$ex[0];
+            $query->where('booked_date', $booked_date);
+        }
+        if($dropupshift){
+            $query->where('shift', $dropupshift);
+        }
+        if($dropupshifttime){
+            $query->where('shift_time', $dropupshifttime);
+        }
+        if(!empty($pickup_city) && !empty($dropup_city)){
+            $query->whereIn('pickup_city', $pickup_city)->whereIn('dropup_city', $dropup_city);
+        }
+        if(!empty($pickup_city)){
+            $query->whereIn('pickup_city', $pickup_city);
+        }
+        if(!empty($dropup_city)){
+            $query->whereIn('dropup_city', $dropup_city);
+        }
+
+        $query->orderBy('id', 'desc');
+        
+        $bookings = $query->latest()->get();
+
+        $filename = 'bookings_' . date('dmY') . '.csv';
+        $handle = fopen($filename, 'w+');
+        fputcsv($handle, ['#','Name','Mobile', 'Date',  'Subpoint', 'PostalCode', 'PickupAddress', 'City', 'DropCity', 'DropAddress', 'DropPostalCode', 'DropSubpoint']);
+
+        foreach ($bookings as $key => $booking) {
+            fputcsv($handle, [
+                $key + 1,
+                $booking->name.'-'.$booking->id.'-'.$booking->user_id.' ('.$booking->pickup_subpoint.') ('.$booking->dropup_subpoint.')',
+                
+                $booking->mobile,
+                $booking->booked_date,
+                $booking->pickup_subpoint,
+                $booking->pickup_postal_code,
+                 $booking->pickup_location,
+                 $booking->pickup_city,
+                 $booking->dropup_city,
+                 $booking->dropup_location,
+                 $booking->dropup_postal_code,
+                 $booking->dropup_subpoint,
+            ]);
+        }
+
+        fclose($handle);
+
+        return response()->download($filename)->deleteFileAfterSend(true);
     }
 }
