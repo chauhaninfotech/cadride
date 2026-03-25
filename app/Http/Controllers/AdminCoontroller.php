@@ -470,10 +470,10 @@ class AdminCoontroller extends Controller
       if($request->hasFile('image_path')){
          $file = $request->file('image_path');
          $filename = time().'_'.$file->getClientOriginalName();
-         $filePath = $file->storeAs('public/carousel', $filename);
-         $imagePath = 'storage/carousel/' . $filename;
+         $filePath = $file->storeAs('storage/carousel', $filename);
+        $imagePath = 'storage/carousel/' . $filename;
          DB::table('carousels')->insert(
-            ['type' => strtoupper($type), 'link' => $link, 'sort' => $sort, 'status' => $status, 'image_path' => $imagePath]  
+            ['type' => strtoupper($type), 'link' => $link, 'sort' => $sort, 'status' => $status, 'image_path' => $filePath]  
          );
          return back()->with('success', 'Carousel has been added successfully!');
       }else{

@@ -386,7 +386,7 @@ $dates[date('d-m-Y')] = date('d-m-Y - l');
                         <label for="status">Pickup Address</label>
                         <select data-zipcode="single_pickuppostal_code" data-lat="single_pickuplatitude" data-long="single_pickuplongitude" data-city="single_pickupcity" class="form-control form-select selectaddressChange" id="selectaddress" name="selectgoingaddress">
                             <option value="">Select Address</option>
-                            @foreach($pick_addresses as $address)
+                            @foreach($pickdrop_addresses as $address)
                                 <option value="{{ $address->address }}">{{ $address->address }}</option>
                             @endforeach
                         </select>
@@ -440,7 +440,7 @@ $dates[date('d-m-Y')] = date('d-m-Y - l');
                         <label for="status">Dropup Address</label>
                         <select class="form-control form-select selectaddressChange" data-zipcode="single_droppostal_code" data-lat="single_droplatitude" data-long="single_droplongitude" data-city="single_dropcity" id="selectaddress2" name="selectaddress">
                             <option value="">Select Address</option>
-                            @foreach($drop_addresses as $address)
+                            @foreach($pickdrop_addresses as $address)
                                 <option value="{{ $address->address }}">{{ $address->address }}</option>
                             @endforeach
                         </select>

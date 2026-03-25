@@ -46,7 +46,8 @@ class BookingControllter extends Controller
         $passengerData = Passenger::where('id', $id)->first();
         $pick_addresses = DB::table('passenger_addresses')->where('user_id', $passengerData->id)->where('address_type','PICK')->get();
         $drop_addresses = DB::table('passenger_addresses')->where('user_id', $passengerData->id)->where('address_type','DROP')->get();
-        return view('booking.passenger-booking', compact('passengerData', 'pick_addresses', 'drop_addresses'));
+        $pickdrop_addresses = DB::table('passenger_addresses')->where('user_id', $passengerData->id)->get();
+        return view('booking.passenger-booking', compact('passengerData', 'pick_addresses', 'drop_addresses', 'pickdrop_addresses'));
     }
 
     public function shiftTime(Request $request)
@@ -586,30 +587,60 @@ class BookingControllter extends Controller
         
         $bookings = $query->latest()->get();
 
-        $filename = 'bookings_' . date('dmY') . '.csv';
-        $handle = fopen($filename, 'w+');
-        fputcsv($handle, ['#','Name','Mobile', 'Date',  'Subpoint', 'PostalCode', 'PickupAddress', 'City', 'DropCity', 'DropAddress', 'DropPostalCode', 'DropSubpoint']);
+        $filename = 'bookings_' . date('dmY') . '.xls';
+        ///$handle = fopen($filename, 'w+');
+        //fputcsv($handle, ['#','Name','Mobile', 'Date',  'Subpoint', 'PostalCode', 'PickupAddress', 'City', 'DropCity', 'DropAddress', 'DropPostalCode', 'DropSubpoint']);
 
-        foreach ($bookings as $key => $booking) {
-            fputcsv($handle, [
-                $key + 1,
-                $booking->name.'-'.$booking->id.'-'.$booking->user_id.' ('.$booking->pickup_subpoint.') ('.$booking->dropup_subpoint.')',
-                
-                $booking->mobile,
-                $booking->booked_date,
-                $booking->pickup_subpoint,
-                $booking->pickup_postal_code,
-                 $booking->pickup_location,
-                 $booking->pickup_city,
-                 $booking->dropup_city,
-                 $booking->dropup_location,
-                 $booking->dropup_postal_code,
-                 $booking->dropup_subpoint,
-            ]);
+        // Start HTML table
+    $html = '<table border="1">';
+    $html .= '<tr>';
+    $html .= '<th>#</th><th>Name</th><th>Mobile</th><th>Date</th><th>Subpoint</th><th>PostalCode</th><th>PickupAddress</th><th>City</th><th>DropCity</th><th>DropAddress</th><th>DropPostalCode</th><th>DropSubpoint</th>';
+    $html .= '</tr>';
+
+    foreach ($bookings as $key => $booking) {
+        if (strtoupper($booking->pickup_city) == 'KITCHENER') {
+            $color = '#fce4d6'; // Light Blue
+        } elseif (strtoupper($booking->pickup_city) == 'CAMBRIDGE') {
+            $color = '#c6e0b4'; // Light Green
+        } elseif (strtoupper($booking->pickup_city) == 'WATERLOO') {
+            $color = '#ddebf7'; // Light Pink
+        } elseif (strtoupper($booking->pickup_city) == 'BRESLAU') {
+            $color = '#F54927'; // Light Green
+        } elseif (strtoupper($booking->pickup_city) == 'CONESTOGO') {
+            $color = '#FFFFFF'; // Light Pink
+        }elseif (strtoupper($booking->pickup_city) == 'ARISS') {
+            $color = '#FFFFFF'; // Light Green
+        } elseif (strtoupper($booking->pickup_city) == 'GUELPH') {
+            $color = '#FFFFFF'; // Light Pink
+        }elseif (strtoupper($booking->pickup_city) == 'MARYHILL') {
+            $color = '#FFFFFF'; // Light Green
+        } elseif (strtoupper($booking->pickup_city) == 'DUNDEE') {
+            $color = '#FFFFFF'; // Light Pink
+        }else {
+            $color = '#FFFFFF'; // Default White
         }
 
-        fclose($handle);
+        $html .= '<tr style="background-color:' . $color . ';">';
+        $html .= '<td>' . ($key + 1) . '</td>';
+        $html .= '<td>' . $booking->name.'-'.$booking->user_id.' ('.$booking->pickup_subpoint.') ('.$booking->dropup_subpoint.')' . '</td>';
+        $html .= '<td>' . $booking->mobile . '</td>';
+        $html .= '<td>' . $booking->booked_date . '</td>';
+        $html .= '<td>' . $booking->pickup_subpoint . '</td>';
+        $html .= '<td>' . $booking->pickup_postal_code . '</td>';
+        $html .= '<td>' . $booking->pickup_location . '</td>';
+        $html .= '<td>' . $booking->pickup_city . '</td>';
+        $html .= '<td>' . $booking->dropup_city . '</td>';
+        $html .= '<td>' . $booking->dropup_location . '</td>';
+        $html .= '<td>' . $booking->dropup_postal_code . '</td>';
+        $html .= '<td>' . $booking->dropup_subpoint . '</td>';
+        $html .= '</tr>';
+    }
 
-        return response()->download($filename)->deleteFileAfterSend(true);
+    $html .= '</table>';
+
+    // Output headers to force download as Excel
+    return response($html)
+        ->header('Content-Type', 'application/vnd.ms-excel')
+        ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 }

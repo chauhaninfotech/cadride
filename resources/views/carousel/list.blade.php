@@ -88,7 +88,7 @@
                                         </td>
                                         <td>
                                             <a href="{{ route('carousel.edit', ['id' => $carousel->id]) }}" class="btn btn-sm btn-primary">Edit</a>
-                                            <button type="button" class="btn btn-sm btn-danger" >Delete</button>
+                                            <button type="button" class="btn btn-sm btn-danger confirmDelete" rel="{{ $carousel->id }}">Delete</button>
                                         </td>
                                     </tr>
                                 @empty
@@ -106,20 +106,24 @@
 </x-app-layout>
 @yield('script')
 <script>
-function confirmDelete(id) {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "This record will be deleted!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Redirect to delete route
-            window.location.href = '/carousel-delete/' + id;
-        }
+$(document).ready(function() {
+    $('.confirmDelete').click(function() {
+        var id = $(this).attr('rel'); // Get the ID from the button's rel attribute
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This record will be deleted!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect to delete route
+                window.location.href = '/carousel-delete/' + id;
+            }
+        });
     });
-}
+});
+
 </script>

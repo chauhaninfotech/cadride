@@ -108,7 +108,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/carousel', [AdminCoontroller::class, 'carouselList'])->name('carousel.list');
     Route::get('/carousel-edit', [AdminCoontroller::class, 'editCarousel'])->name('carousel.edit');
     Route::post('/carousel-edit', [AdminCoontroller::class, 'postEditCarousel'])->name('carousel.update');
-    Route::post('/carousel-delete', [AdminCoontroller::class, 'deleteCarousel'])->name('carousel.delete');
+    Route::get('/carousel-delete/{id}', [AdminCoontroller::class, 'deleteCarousel'])->name('carousel.delete');
     Route::post('/carousel-add', [AdminCoontroller::class, 'postCarousel'])->name('carousel.add');
     Route::get('/carousel-add', [AdminCoontroller::class, 'carouselAdd'])->name('carousel.add');
 
